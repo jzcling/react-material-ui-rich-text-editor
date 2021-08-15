@@ -82,7 +82,6 @@ export default function Editor(props) {
 
   const handleChange = useCallback(
     (document) => {
-      console.log(document);
       onChange(document);
       setSelection(editor.selection);
       identifyLinksInTextIfAny(editor);
