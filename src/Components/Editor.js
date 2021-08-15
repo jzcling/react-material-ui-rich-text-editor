@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
       borderColor: "rgba(0, 0, 0, 0.87)",
     },
     padding: "14px",
+    margin: theme.spacing(1),
   },
   focus: {
     borderWidth: "2px",
