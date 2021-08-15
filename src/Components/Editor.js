@@ -103,7 +103,8 @@ export default function Editor(props) {
         setTimeout(() => {
           if (!cancelBlur) {
             setFocus(false);
-            onBlur();
+            const html = serialize(editor);
+            onBlur(html);
           }
         }, 100);
       }}
@@ -140,7 +141,7 @@ Editor.defaultProps = {
     },
   ],
   onChange: () => {},
-  onBlur: () => {},
+  onBlur: (html) => {},
 };
 
 Editor.propTypes = {

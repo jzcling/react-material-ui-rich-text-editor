@@ -117,24 +117,11 @@ export function isLinkNodeAtSelection(editor, selection) {
 
 export function toggleLinkAtSelection(editor) {
   if (!isLinkNodeAtSelection(editor, editor.selection)) {
-    // const isSelectionCollapsed = Range.isCollapsed(editor.selection);
-    // if (isSelectionCollapsed) {
-    //   Transforms.insertNodes(
-    //     editor,
-    //     {
-    //       type: "Link",
-    //       url: "",
-    //       children: [{ text: "Link" }],
-    //     },
-    //     { at: editor.selection }
-    //   );
-    // } else {
     Transforms.wrapNodes(
       editor,
       { type: "Link", url: "", children: [] },
       { split: true, at: editor.selection }
     );
-    // }
   } else {
     Transforms.unwrapNodes(editor, {
       match: (n) => Element.isElement(n) && n.type === "Link",

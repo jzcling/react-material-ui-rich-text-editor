@@ -25,14 +25,15 @@
       "last 1 safari version"
     ]
   },
-  "description": "A WYSIWYG rich text editor build with Slate using Material UI components.",
+  "description": "A WYSIWYG rich text editor built with Slate using Material UI components.",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "babel": {
     "presets": [
       "react",
       "env",
-      "stage-2"
+      "stage-2",
+      "minify"
     ]
   },
   "repository": {
