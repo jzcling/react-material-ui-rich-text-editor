@@ -1,0 +1,79 @@
+{
+  "name": "@jeremyling/react-material-ui-rich-text-editor",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src --out-dir dist --copy-files --no-comments",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "description": "A WYSIWYG rich text editor build with Slate using Material UI components.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "babel": {
+    "presets": [
+      "react",
+      "env",
+      "stage-2"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jzcling/react-material-ui-rich-text-editor.git"
+  },
+  "keywords": [
+    "rich text editor",
+    "text editor",
+    "wysiwyg",
+    "material ui",
+    "react"
+  ],
+  "author": "Jeremy Ling",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jzcling/react-material-ui-rich-text-editor/issues"
+  },
+  "homepage": "https://github.com/jzcling/react-material-ui-rich-text-editor#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-minify": "^0.5.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-scripts": "^4.0.3"
+  },
+  "peerDependencies": {
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "escape-html": "^1.0.3",
+    "is-hotkey": "^0.1.8",
+    "is-url": "^1.2.4",
+    "lodash": "^4.17.21",
+    "mdi-material-ui": "^6.22.1",
+    "slate": "^0.65.3",
+    "slate-react": "^0.65.3"
+  }
+}
