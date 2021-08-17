@@ -246,6 +246,7 @@ export default function Toolbar(props) {
           type: "number",
         }}
         style={{ flexShrink: 0, width: "100px" }}
+        disabled={disabled}
       />
 
       {CHARACTER_STYLES.map((style) => (

@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
 var cancelBlur = false;
 
 export default function Editor(props) {
-  const { document, onChange, onBlur } = props;
+  const { document, onChange, onBlur, containerProps, editableProps } = props;
   const classes = useStyles();
 
   const [editor] = useState(withReact(createEditor()));
@@ -107,6 +107,7 @@ export default function Editor(props) {
           }
         }, 100);
       }}
+      {...containerProps}
     >
       <Slate editor={editor} value={document} onChange={handleChange}>
         <Toolbar selection={selection || previousSelection} disabled={!focus} />
@@ -115,6 +116,7 @@ export default function Editor(props) {
           renderLeaf={renderLeaf}
           onKeyDown={onKeyDown}
           spellCheck
+          {...editableProps}
         />
 
         <LinkEditor
