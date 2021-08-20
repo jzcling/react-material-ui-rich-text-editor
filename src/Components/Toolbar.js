@@ -191,7 +191,9 @@ export default function Toolbar(props) {
   const handleCharacterStyleChange = useCallback(
     (style) => (event) => {
       event.preventDefault();
-      Transforms.select(editor, selection);
+      if (!editor.selection) {
+        Transforms.select(editor, selection);
+      }
       toggleMark(editor, style);
     },
     [editor, selection]
@@ -200,7 +202,9 @@ export default function Toolbar(props) {
   const handleTextAlignChange = useCallback(
     (align) => (event) => {
       event.preventDefault();
-      Transforms.select(editor, selection);
+      if (!editor.selection) {
+        Transforms.select(editor, selection);
+      }
       setAlignAnchorEl(undefined);
       toggleBlock(editor, align);
     },
@@ -210,7 +214,9 @@ export default function Toolbar(props) {
   const handleGroupTypeChange = useCallback(
     (style, type) => (event) => {
       event.preventDefault();
-      Transforms.select(editor, selection);
+      if (!editor.selection) {
+        Transforms.select(editor, selection);
+      }
       toggleBlock(editor, style, type);
     },
     [editor, selection]
@@ -218,7 +224,10 @@ export default function Toolbar(props) {
 
   const handleFontSizeChange = useCallback(
     (event) => {
-      Transforms.select(editor, selection);
+      event.preventDefault();
+      if (!editor.selection) {
+        Transforms.select(editor, selection);
+      }
       toggleMark(editor, "fontSize", event.target.value);
       setFontSize(event.target.value);
     },
@@ -233,12 +242,11 @@ export default function Toolbar(props) {
         margin="dense"
         label="Font Size"
         aria-label="font size"
-        value={fontSize}
+        value={fontSize || ""}
         onChange={handleFontSizeChange}
         onKeyDown={(event) => {
           if (isHotkey("enter", { byKey: true }, event)) {
-            event.preventDefault();
-            Transforms.select(editor, selection);
+            handleFontSizeChange(event);
             ReactEditor.focus(editor);
           }
         }}
@@ -312,17 +320,19 @@ export default function Toolbar(props) {
       <ButtonGroup aria-label="group types" disabled={disabled}>
         {GROUP_TYPES.map((type) => (
           <Tooltip title={type.style} key={type.style}>
-            <IconButton
-              aria-label={type.style}
-              className={clsx(classes.margin, {
-                [classes.active]: activeGroup.style === type.style,
-              })}
-              // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
-              // onClick will cause users to lose focus on selection
-              onMouseDown={handleGroupTypeChange(type.style, type.type)}
-            >
-              {type.icon}
-            </IconButton>
+            <span>
+              <IconButton
+                aria-label={type.style}
+                className={clsx(classes.margin, {
+                  [classes.active]: activeGroup.style === type.style,
+                })}
+                // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
+                // onClick will cause users to lose focus on selection
+                onMouseDown={handleGroupTypeChange(type.style, type.type)}
+              >
+                {type.icon}
+              </IconButton>
+            </span>
           </Tooltip>
         ))}
       </ButtonGroup>

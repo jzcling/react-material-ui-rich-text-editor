@@ -22,8 +22,6 @@ export default function ImageEditor(props) {
   const editor = useSlateStatic();
   const classes = useStyles();
 
-  const [error, setError] = useState();
-
   const [node, path] =
     Editor.above(editor, {
       at: selection,

@@ -1,6 +1,7 @@
 import isUrl from "is-url";
 import { Editor, Element, Point, Range, Text, Transforms } from "slate";
 import escapeHtml from "escape-html";
+import { jsx } from "slate-hyperscript";
 
 export const GROUP_TYPES = [
   "Ordered List",
@@ -323,5 +324,101 @@ export const serialize = (node) => {
       return `<div style="text-align: justify;">${children}</div>`;
     default:
       return children;
+  }
+};
+
+export const deserialize = (el) => {
+  if (el.nodeType === 3) {
+    return el.textContent;
+  } else if (el.nodeType !== 1) {
+    return null;
+  }
+
+  let children = Array.from(el.childNodes).map(deserialize);
+
+  if (children.length === 0) {
+    children = [{ text: "" }];
+  }
+
+  switch (el.nodeName) {
+    case "BODY":
+      if (el.firstChild && el.firstChild.nodeType === 3) {
+        return [jsx("element", { type: "Paragraph" }, children)];
+      } else {
+        return jsx("fragment", {}, children);
+      }
+    case "BR":
+      return "\n";
+    case "P":
+      return jsx("element", { type: "Paragraph" }, children);
+    case "BLOCKQUOTE":
+      return jsx("element", { type: "Quote Block" }, children);
+    case "Q":
+      return jsx("element", { type: "Quote" }, children);
+    case "PRE":
+      if (el.hasChildNodes() && el.firstChild.nodeName === "CODE") {
+        return jsx("element", { type: "Code Block" }, children);
+      }
+      return el.textContent;
+    case "CODE":
+      return jsx("element", { type: "Code" }, children);
+    case "OL":
+      return jsx("element", { type: "Ordered List" }, children);
+    case "UL":
+      return jsx("element", { type: "Unordered List" }, children);
+    case "LI":
+      return jsx("element", { type: "List Item" }, children);
+    case "A":
+      return jsx(
+        "element",
+        {
+          type: "Link",
+          url: el.getAttribute("href"),
+          caption: el.getAttribute("alt"),
+          height: el.getAttribute("height"),
+          width: el.getAttribute("width"),
+        },
+        children
+      );
+    case "IMG":
+      return jsx(
+        "element",
+        { type: "Image", url: el.getAttribute("src") },
+        children
+      );
+    case "DIV":
+      if (el.style && el.style.textAlign) {
+        switch (el.style.textAlign) {
+          case "left":
+            return jsx("element", { type: "Align Left" }, children);
+          case "center":
+            return jsx("element", { type: "Align Center" }, children);
+          case "right":
+            return jsx("element", { type: "Align Left" }, children);
+          case "justify":
+            return jsx("element", { type: "Justify" }, children);
+          default:
+            return el.textContent;
+        }
+      }
+      return el.textContent;
+    case "STRONG":
+      return jsx("text", { bold: true }, children);
+    case "EM":
+      return jsx("text", { italic: true }, children);
+    case "U":
+      return jsx("text", { underline: true }, children);
+    case "DEL":
+      return jsx("text", { strike: true }, children);
+    case "MARK":
+      return jsx("text", { highlight: true }, children);
+    case "SPAN":
+      if (el.style && el.style.fontSize) {
+        const fontSize = parseInt(String(el.style.fontSize).replace("px", ""));
+        return jsx("text", { fontSize: fontSize }, children);
+      }
+      return el.textContent;
+    default:
+      return el.textContent;
   }
 };

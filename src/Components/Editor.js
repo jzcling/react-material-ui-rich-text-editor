@@ -1,11 +1,12 @@
 import { Editable, Slate, withReact } from "slate-react";
 import { createEditor } from "slate";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
 import useSelection from "../Hooks/useSelection";
 import Toolbar from "./Toolbar";
 import {
+  deserialize,
   identifyLinksInTextIfAny,
   isImageNodeAtSelection,
   isLinkNodeAtSelection,
@@ -16,6 +17,7 @@ import { makeStyles, Paper } from "@material-ui/core";
 import clsx from "clsx";
 import ImageEditor from "./ImageEditor";
 import _ from "lodash";
+import { withHistory } from "slate-history";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,11 +40,19 @@ const useStyles = makeStyles((theme) => ({
 
 var cancelBlur = false;
 
+const initialDocument = [
+  {
+    type: "Paragraph",
+    children: [{ text: "Rich Text" }],
+  },
+];
+
 export default function Editor(props) {
-  const { document, onChange, onBlur, containerProps, editableProps } = props;
+  const { html, document, onChange, onBlur, containerProps, editableProps } =
+    props;
   const classes = useStyles();
 
-  const [editor] = useState(withReact(createEditor()));
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
   const [previousSelection, selection, setSelection] = useSelection(editor);
 
@@ -51,40 +61,41 @@ export default function Editor(props) {
 
   const [focus, setFocus] = useState(false);
 
+  const value = useMemo(() => {
+    if (document) {
+      return document;
+    }
+    if (html) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      return deserialize(doc.body) || initialDocument;
+    }
+    return initialDocument;
+  }, [html, document]);
+
   useEffect(() => {
     if (focus) {
-      if (isLinkNodeAtSelection(editor, selection)) {
-        setSelectionForLink(selection);
-      } else if (
-        !selection &&
-        isLinkNodeAtSelection(editor, previousSelection)
-      ) {
-        setSelectionForLink(previousSelection);
+      const sel = selection || previousSelection;
+      if (isLinkNodeAtSelection(editor, sel)) {
+        setSelectionForLink(sel);
       } else {
         setSelectionForLink(undefined);
       }
 
-      if (isImageNodeAtSelection(editor, selection)) {
-        setSelectionForImage(selection);
-      } else if (
-        !selection &&
-        isImageNodeAtSelection(editor, previousSelection)
-      ) {
-        setSelectionForImage(previousSelection);
-      } else {
+      if (isImageNodeAtSelection(editor, sel)) {
+        setSelectionForImage(sel);
         setSelectionForImage(undefined);
       }
     } else {
       setSelectionForImage(undefined);
       setSelectionForLink(undefined);
     }
-  }, [editor, selection, previousSelection]);
+  }, [editor, selection, previousSelection, focus]);
 
   const handleChange = useCallback(
     (document) => {
       onChange(document);
       setSelection(editor.selection);
-      identifyLinksInTextIfAny(editor);
+      // identifyLinksInTextIfAny(editor);
     },
     [editor, onChange, setSelection]
   );
@@ -109,7 +120,7 @@ export default function Editor(props) {
       }}
       {...containerProps}
     >
-      <Slate editor={editor} value={document} onChange={handleChange}>
+      <Slate editor={editor} value={value} onChange={handleChange}>
         <Toolbar selection={selection || previousSelection} disabled={!focus} />
         <Editable
           renderElement={renderElement}
@@ -135,17 +146,12 @@ export default function Editor(props) {
 }
 
 Editor.defaultProps = {
-  document: [
-    {
-      type: "Paragraph",
-      children: [{ text: "Rich Text" }],
-    },
-  ],
   onChange: () => {},
   onBlur: (html) => {},
 };
 
 Editor.propTypes = {
+  html: PropTypes.string,
   document: PropTypes.array,
   onChange: PropTypes.func,
   onBlur: PropTypes.func,

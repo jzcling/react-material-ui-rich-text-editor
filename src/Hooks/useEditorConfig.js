@@ -5,7 +5,7 @@ import {
   getActiveBlock,
   GROUP_TYPES,
   toggleBlock,
-  toggleStyle,
+  toggleMark,
 } from "../Utils/EditorUtils";
 import { Editor } from "slate";
 
@@ -126,27 +126,27 @@ function renderLeaf({ leaf, children, attributes }) {
 
 function handleKeyDown(editor, event) {
   if (isHotkey("mod+b", { byKey: true }, event)) {
-    toggleStyle(editor, "bold");
+    toggleMark(editor, "bold");
     return;
   }
   if (isHotkey("mod+i", { byKey: true }, event)) {
-    toggleStyle(editor, "italic");
+    toggleMark(editor, "italic");
     return;
   }
   if (isHotkey("mod+u", { byKey: true }, event)) {
-    toggleStyle(editor, "underline");
+    toggleMark(editor, "underline");
     return;
   }
   if (isHotkey("mod+alt+h", { byKey: true }, event)) {
-    toggleStyle(editor, "highlight");
+    toggleMark(editor, "highlight");
     return;
   }
   if (isHotkey("mod+c", { byKey: true }, event)) {
-    toggleStyle(editor, "code");
+    toggleMark(editor, "code");
     return;
   }
   if (isHotkey("mod+q", { byKey: true }, event)) {
-    toggleStyle(editor, "quote");
+    toggleMark(editor, "quote");
     return;
   }
   if (isHotkey("backspace", { byKey: true }, event)) {

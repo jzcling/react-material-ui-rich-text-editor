@@ -1,6 +1,6 @@
 {
   "name": "@jeremyling/react-material-ui-rich-text-editor",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "scripts": {
     "start": "react-scripts start",
     "build": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src --out-dir dist --copy-files --no-comments",
@@ -75,6 +75,7 @@
     "lodash": "^4.17.21",
     "mdi-material-ui": "^6.22.1",
     "slate": "^0.65.3",
+    "slate-hyperscript": "^0.62.0",
     "slate-react": "^0.65.3"
   }
 }
