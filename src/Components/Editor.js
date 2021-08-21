@@ -83,6 +83,7 @@ export default function Editor(props) {
 
       if (isImageNodeAtSelection(editor, sel)) {
         setSelectionForImage(sel);
+      } else {
         setSelectionForImage(undefined);
       }
     } else {
@@ -95,7 +96,7 @@ export default function Editor(props) {
     (document) => {
       onChange(document);
       setSelection(editor.selection);
-      // identifyLinksInTextIfAny(editor);
+      identifyLinksInTextIfAny(editor);
     },
     [editor, onChange, setSelection]
   );
