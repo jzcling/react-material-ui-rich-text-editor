@@ -420,8 +420,27 @@ export const deserialize = (el) => {
         const fontSize = parseInt(String(el.style.fontSize).replace("px", ""));
         return jsx("text", { fontSize: fontSize }, children);
       }
-      return el.textContent;
+      if (el.childNodes.length > 0) {
+        if (
+          el.childNodes[0].nodeName === "IMG" &&
+          el.childNodes[1].nodeName === "SPAN"
+        ) {
+          const img = el.childNodes[0];
+          return jsx(
+            "element",
+            {
+              type: "Image",
+              url: img.getAttribute("src"),
+              caption: img.getAttribute("alt"),
+              height: img.getAttribute("height"),
+              width: img.getAttribute("width"),
+            },
+            [{ text: "" }]
+          );
+        }
+      }
+      return jsx("fragment", {}, children);
     default:
-      return el.textContent;
+      return jsx("fragment", {}, children);
   }
 };
