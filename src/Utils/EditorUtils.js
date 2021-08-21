@@ -374,16 +374,19 @@ export const deserialize = (el) => {
         {
           type: "Link",
           url: el.getAttribute("href"),
-          caption: el.getAttribute("alt"),
-          height: el.getAttribute("height"),
-          width: el.getAttribute("width"),
         },
         children
       );
     case "IMG":
       return jsx(
         "element",
-        { type: "Image", url: el.getAttribute("src") },
+        {
+          type: "Image",
+          url: el.getAttribute("src"),
+          caption: el.getAttribute("alt"),
+          height: el.getAttribute("height"),
+          width: el.getAttribute("width"),
+        },
         children
       );
     case "DIV":
