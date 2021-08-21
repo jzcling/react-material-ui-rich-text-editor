@@ -329,7 +329,7 @@ export const serialize = (node) => {
 
 export const deserialize = (el) => {
   if (el.nodeType === 3) {
-    return el.textContent;
+    return jsx("text", { fontSize: 16 }, [el.textContent]);
   } else if (el.nodeType !== 1) {
     return null;
   }
@@ -439,8 +439,8 @@ export const deserialize = (el) => {
           );
         }
       }
-      return jsx("fragment", {}, children);
+      return jsx("text", { fontSize: "16px" }, children);
     default:
-      return jsx("fragment", {}, children);
+      return jsx("text", { fontSize: "16px" }, children);
   }
 };
