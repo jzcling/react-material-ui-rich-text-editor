@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import {
+  Button,
   ButtonGroup,
   Divider,
   IconButton,
@@ -153,6 +154,10 @@ const useStyles = makeStyles((theme) => ({
   },
   margin: {
     marginLeft: "2px",
+  },
+  groupedButton: {
+    padding: "12px",
+    borderRadius: "50%",
   },
 }));
 
@@ -320,19 +325,19 @@ export default function Toolbar(props) {
       <ButtonGroup aria-label="group types" disabled={disabled}>
         {GROUP_TYPES.map((type) => (
           <Tooltip title={type.style} key={type.style}>
-            <span>
-              <IconButton
-                aria-label={type.style}
-                className={clsx(classes.margin, {
-                  [classes.active]: activeGroup.style === type.style,
-                })}
-                // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
-                // onClick will cause users to lose focus on selection
-                onMouseDown={handleGroupTypeChange(type.style, type.type)}
-              >
-                {type.icon}
-              </IconButton>
-            </span>
+            <Button
+              key={type.style}
+              aria-label={type.style}
+              className={clsx(classes.margin, classes.groupedButton, {
+                [classes.active]: activeGroup.style === type.style,
+              })}
+              component={disabled ? "div" : undefined} // required to avoid error message about passing a disabled button to tooltip
+              // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
+              // onClick will cause users to lose focus on selection
+              onMouseDown={handleGroupTypeChange(type.style, type.type)}
+            >
+              {type.icon}
+            </Button>
           </Tooltip>
         ))}
       </ButtonGroup>
