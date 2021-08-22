@@ -43,7 +43,7 @@ var cancelBlur = false;
 const initialDocument = [
   {
     type: "Paragraph",
-    children: [{ text: "Rich Text" }],
+    children: [{ text: "" }],
   },
 ];
 

@@ -165,6 +165,7 @@ function handleKeyDown(editor, event) {
     toggleBlock(editor, "Align Center");
   }
   if (isHotkey("mod+r", { byKey: true }, event)) {
+    event.preventDefault();
     toggleBlock(editor, "Align Right");
   }
   if (isHotkey("mod+j", { byKey: true }, event)) {

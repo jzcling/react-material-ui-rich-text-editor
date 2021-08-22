@@ -79,7 +79,7 @@ If neither `html` or `document` is set, content will default to
 [
   {
     "type": "Paragraph",
-    "children": [{ "text": "Rich Text" }]
+    "children": [{ "text": "" }]
   }
 ]
 ```
