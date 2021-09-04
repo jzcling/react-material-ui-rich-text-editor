@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from "react";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
 
 export default function useSelection(editor) {
   const [selection, setSelection] = useState(editor.selection);
   const previousSelection = useRef();
   const setSelectionOptimized = useCallback(
     (newSelection) => {
-      if (_.isEqual(selection, newSelection)) {
+      if (isEqual(selection, newSelection)) {
         return;
       }
       previousSelection.current = selection;

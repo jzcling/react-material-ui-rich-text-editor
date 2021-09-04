@@ -8,6 +8,14 @@ A WYSIWYG rich text editor built with Slate using Material UI components. This p
 npm install --save @jeremyling/react-material-ui-rich-text-editor
 ```
 
+The following packages are peer dependencies and must be installed in your project for this package to work.
+
+```
+@material-ui/core
+lodash
+mdi-material-ui
+```
+
 ## Usage Example
 
 ```jsx

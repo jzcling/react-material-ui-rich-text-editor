@@ -16,7 +16,6 @@ import LinkEditor from "./LinkEditor";
 import { makeStyles, Paper } from "@material-ui/core";
 import clsx from "clsx";
 import ImageEditor from "./ImageEditor";
-import _ from "lodash";
 import { withHistory } from "slate-history";
 
 const useStyles = makeStyles((theme) => ({

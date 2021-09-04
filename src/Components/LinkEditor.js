@@ -1,4 +1,4 @@
-import { Fade, makeStyles, Paper, TextField } from "@material-ui/core";
+import { Fade, Grow, makeStyles, Paper, TextField } from "@material-ui/core";
 import isUrl from "is-url";
 import React, { useEffect, useMemo, useState } from "react";
 import { Editor, Transforms } from "slate";
@@ -80,7 +80,7 @@ export default function LinkEditor(props) {
   }, [domNode]);
 
   return (
-    <Fade
+    <Grow
       in={open}
       onEntered={() => setState("entered")}
       onExited={() => setState("exited")}
@@ -107,7 +107,7 @@ export default function LinkEditor(props) {
           helperText={error}
         />
       </Paper>
-    </Fade>
+    </Grow>
   );
 }
 

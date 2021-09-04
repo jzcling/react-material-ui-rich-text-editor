@@ -66,7 +66,7 @@ export default function ImageEditor(props) {
     Transforms.setNodes(editor, { [key]: event.target.value }, { at: path });
 
   return (
-    <Fade
+    <Grow
       in={open}
       onEntered={() => setState("entered")}
       onExited={() => setState("exited")}
@@ -138,7 +138,7 @@ export default function ImageEditor(props) {
           </Grid>
         </Grid>
       </Paper>
-    </Fade>
+    </Grow>
   );
 }
 
