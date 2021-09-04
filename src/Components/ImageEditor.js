@@ -1,4 +1,5 @@
-import { Fade, Grid, makeStyles, Paper, TextField } from "@material-ui/core";
+import { Grid, Grow, Paper, TextField } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import React, { useEffect, useMemo, useState } from "react";
 import { Editor, Transforms } from "slate";
 import { ReactEditor, useSlateStatic } from "slate-react";

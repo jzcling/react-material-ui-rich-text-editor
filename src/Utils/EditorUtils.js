@@ -136,7 +136,7 @@ export function identifyLinksInTextIfAny(editor) {
     return;
   }
 
-  const [node, _] = Editor.parent(editor, editor.selection);
+  const [node] = Editor.parent(editor, editor.selection);
 
   // if we are already inside a link, exit early.
   if (node.type === "Link") {

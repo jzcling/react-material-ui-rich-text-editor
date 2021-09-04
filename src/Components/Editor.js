@@ -13,7 +13,8 @@ import {
   serialize,
 } from "../Utils/EditorUtils";
 import LinkEditor from "./LinkEditor";
-import { makeStyles, Paper } from "@material-ui/core";
+import { Paper } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import ImageEditor from "./ImageEditor";
 import { withHistory } from "slate-history";
@@ -155,4 +156,6 @@ Editor.propTypes = {
   document: PropTypes.array,
   onChange: PropTypes.func,
   onBlur: PropTypes.func,
+  containerProps: PropTypes.object,
+  editableProps: PropTypes.object,
 };
