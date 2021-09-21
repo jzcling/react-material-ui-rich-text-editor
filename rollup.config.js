@@ -33,7 +33,7 @@ const config = [
         include: ["node_modules/**"],
       }),
       babel({
-        babelHelpers: "bundled",
+        babelHelpers: "runtime",
         exclude: "node_modules/**",
         plugins: [
           [
@@ -46,6 +46,7 @@ const config = [
           "@babel/plugin-proposal-export-namespace-from",
           "@babel/plugin-proposal-numeric-separator",
           "@babel/plugin-proposal-throw-expressions",
+          "@babel/plugin-transform-runtime",
           [
             "transform-react-remove-prop-types",
             {
@@ -61,7 +62,7 @@ const config = [
       terser(),
       autoExternal(),
     ],
-    external: ["lodash/isEqual", "@material-ui/core/styles", "clsx"],
+    external: [/lodash/, /@material-ui\/core/, "clsx", /@babel\/runtime/],
   },
   {
     input: "src/index.js",
