@@ -14,6 +14,7 @@ The following packages are peer dependencies and must be installed in your proje
 @material-ui/core
 lodash
 mdi-material-ui
+react-color
 ```
 
 ## Usage Example

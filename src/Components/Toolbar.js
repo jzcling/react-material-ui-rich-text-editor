@@ -9,6 +9,7 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Popover,
   TextField,
   Tooltip,
 } from "@material-ui/core";
@@ -44,10 +45,12 @@ import {
   getActiveStyles,
   getActiveBlock,
   getActiveFontSize,
+  getActiveFontColor,
 } from "../Utils/EditorUtils";
 import { ReactEditor, useSlate } from "slate-react";
 import { Transforms } from "slate";
 import isHotkey from "is-hotkey";
+import { CompactPicker } from "react-color";
 
 const CHARACTER_STYLES = [
   {
@@ -167,9 +170,15 @@ export default function Toolbar(props) {
   const editor = useSlate();
 
   var [fontSize, setFontSize] = useState();
+  var [fontColor, setFontColor] = useState();
+  const [anchorEl, setAnchorEl] = React.useState(null);
 
   useEffect(() => {
     setFontSize(getActiveFontSize(editor));
+  }, [editor, selection]);
+
+  useEffect(() => {
+    setFontColor(getActiveFontColor(editor));
   }, [editor, selection]);
 
   const [alignAnchorEl, setAlignAnchorEl] = useState();
@@ -239,6 +248,28 @@ export default function Toolbar(props) {
     [editor, selection]
   );
 
+  const handleFontColorChange = useCallback(
+    (color) => {
+      if (!editor.selection) {
+        Transforms.select(editor, selection);
+      }
+      toggleMark(editor, "color", color.hex);
+      setFontColor(color.hex);
+      closeColorPicker();
+    },
+    [editor, selection]
+  );
+
+  const openColorPicker = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const closeColorPicker = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
     <div className={classes.toolbar}>
       <TextField
@@ -261,6 +292,29 @@ export default function Toolbar(props) {
         style={{ flexShrink: 0, width: "100px" }}
         disabled={disabled}
       />
+
+      <Tooltip title="Font Colour">
+        <IconButton
+          aria-label="font colour"
+          // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
+          // onClick will cause users to lose focus on selection
+          onMouseDown={openColorPicker}
+          style={{ backgroundColor: fontColor, marginLeft: "8px" }}
+        />
+      </Tooltip>
+
+      <Popover
+        id="font-color-picker"
+        open={open}
+        anchorEl={anchorEl}
+        onClose={closeColorPicker}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <CompactPicker onChangeComplete={handleFontColorChange} />
+      </Popover>
 
       {CHARACTER_STYLES.map((style) => (
         <Tooltip title={style.label} key={style.style}>

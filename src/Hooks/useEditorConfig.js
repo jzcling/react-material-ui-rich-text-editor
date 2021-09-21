@@ -109,16 +109,22 @@ function renderLeaf({ leaf, children, attributes }) {
     children = <q>{children}</q>;
   }
 
+  const style = {
+    fontSize: "16px",
+    color: "#181d23",
+  };
+
   if (leaf.fontSize) {
-    return (
-      <span style={{ fontSize: `${leaf.fontSize}px` }} {...attributes}>
-        {children}
-      </span>
-    );
+    style.fontSize = String(leaf.fontSize).endsWith("px")
+      ? leaf.fontSize
+      : String(leaf.fontSize) + "px";
+  }
+  if (leaf.color) {
+    style.color = leaf.color;
   }
 
   return (
-    <span style={{ fontSize: `16px` }} {...attributes}>
+    <span style={style} {...attributes}>
       {children}
     </span>
   );

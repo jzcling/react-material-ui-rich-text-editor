@@ -105,6 +105,14 @@ export const getActiveFontSize = (editor) => {
   return 16;
 };
 
+export const getActiveFontColor = (editor) => {
+  const marks = Editor.marks(editor);
+  if (marks) {
+    return marks.color || "#181d23";
+  }
+  return "#181d23";
+};
+
 export function isLinkNodeAtSelection(editor, selection) {
   if (!selection) {
     return false;
@@ -281,10 +289,23 @@ export const serialize = (node) => {
     if (node.quote) {
       string = `<q>${string}</q>`;
     }
+    const style = {
+      "font-size": "16px",
+      color: "#181d23",
+    };
     if (node.fontSize) {
-      string = `<span style="font-size: ${node.fontSize}px;">${string}</span>`;
+      style["font-size"] = String(node.fontSize).endsWith("px")
+        ? node.fontSize
+        : String(node.fontSize) + "px";
     }
-    return string;
+    if (node.color) {
+      style["color"] = node.color;
+    }
+    const styleString = Object.entries(style).reduce(
+      (style, [key, value]) => style + `${key}: ${value};`,
+      ""
+    );
+    return `<span style="${styleString}">${string}</span>`;
   }
 
   const children = node.children.map((n) => serialize(n)).join("");
@@ -416,9 +437,19 @@ export const deserialize = (el) => {
     case "MARK":
       return jsx("text", { highlight: true }, children);
     case "SPAN":
-      if (el.style && el.style.fontSize) {
-        const fontSize = parseInt(String(el.style.fontSize).replace("px", ""));
-        return jsx("text", { fontSize: fontSize }, children);
+      if (el.style) {
+        const style = {
+          fontSize: 16,
+        };
+        if (el.style.fontSize) {
+          style.fontSize = parseInt(
+            String(el.style.fontSize).replace("px", "")
+          );
+        }
+        if (el.style.color) {
+          style.color = el.style.color;
+        }
+        return jsx("text", style, children);
       }
       if (el.childNodes.length > 0) {
         if (
