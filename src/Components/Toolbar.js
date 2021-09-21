@@ -48,7 +48,7 @@ import {
   getActiveFontColor,
 } from "../Utils/EditorUtils";
 import { ReactEditor, useSlate } from "slate-react";
-import { Transforms } from "slate";
+import { Editor, Transforms } from "slate";
 import isHotkey from "is-hotkey";
 import { CompactPicker } from "react-color";
 
@@ -206,7 +206,13 @@ export default function Toolbar(props) {
     (style) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, selection);
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleMark(editor, style);
     },
@@ -217,7 +223,13 @@ export default function Toolbar(props) {
     (align) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, selection);
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       setAlignAnchorEl(undefined);
       toggleBlock(editor, align);
@@ -229,7 +241,13 @@ export default function Toolbar(props) {
     (style, type) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, selection);
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleBlock(editor, style, type);
     },
@@ -240,7 +258,13 @@ export default function Toolbar(props) {
     (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, selection);
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleMark(editor, "fontSize", event.target.value);
       setFontSize(event.target.value);
@@ -251,7 +275,13 @@ export default function Toolbar(props) {
   const handleFontColorChange = useCallback(
     (color) => {
       if (!editor.selection) {
-        Transforms.select(editor, selection);
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleMark(editor, "color", color.hex);
       setFontColor(color.hex);
