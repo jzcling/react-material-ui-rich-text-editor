@@ -330,11 +330,19 @@ export const serialize = (node) => {
     case "Link":
       return `<a href="${escapeHtml(node.url)}">${children}</a>`;
     case "Image":
-      return `<span content-editable="false" style="display: flex;flex-direction: column;justify-content: center;align-items: center;"><img src="${escapeHtml(
-        node.url
-      )}" alt="${escapeHtml(node.caption)}" width="${node.width}" height="${
-        node.height
-      }" /><span>${escapeHtml(node.caption)}</span>${children}</span>`;
+      return `<span 
+        content-editable="false" 
+        style="display: flex;flex-direction: column;justify-content: center;align-items: center;"
+      >
+        <img 
+          src="${escapeHtml(node.url)}" 
+          alt="${escapeHtml(node.caption)}" 
+          width="${node.width}" 
+          height="${node.height}" 
+        />
+        <span>${escapeHtml(node.caption)}</span>
+        ${children}
+      </span>`;
     case "Align Left":
       return `<div style="text-align: left;">${children}</div>`;
     case "Align Center":
@@ -470,8 +478,8 @@ export const deserialize = (el) => {
           );
         }
       }
-      return jsx("text", { fontSize: "16px" }, children);
+      return jsx("text", { fontSize: 16 }, children);
     default:
-      return jsx("text", { fontSize: "16px" }, children);
+      return jsx("text", { fontSize: 16 }, children);
   }
 };
