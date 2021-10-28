@@ -147,7 +147,7 @@ function handleKeyDown(editor, event) {
     toggleMark(editor, "highlight");
     return;
   }
-  if (isHotkey("mod+c", { byKey: true }, event)) {
+  if (isHotkey("mod+alt+c", { byKey: true }, event)) {
     toggleMark(editor, "code");
     return;
   }
