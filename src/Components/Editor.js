@@ -1,6 +1,12 @@
 import { Editable, Slate, withReact } from "slate-react";
 import { createEditor } from "slate";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
 import useSelection from "../Hooks/useSelection";
@@ -18,6 +24,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import ImageEditor from "./ImageEditor";
 import { withHistory } from "slate-history";
+import { withHtml } from "../Utils/PasteUtils";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,7 +59,11 @@ export default function Editor(props) {
     props;
   const classes = useStyles();
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editorRef = useRef();
+  if (!editorRef.current)
+    editorRef.current = withHtml(withHistory(withReact(createEditor())));
+  const editor = editorRef.current;
+
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
   const [previousSelection, selection, setSelection] = useSelection(editor);
 
