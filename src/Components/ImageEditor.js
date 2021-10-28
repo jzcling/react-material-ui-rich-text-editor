@@ -1,27 +1,20 @@
-import { Grid, Grow, Paper, TextField } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from "@material-ui/core";
+import React from "react";
 import { Editor, Transforms } from "slate";
-import { ReactEditor, useSlateStatic } from "slate-react";
+import { useSlateStatic } from "slate-react";
 import PropTypes from "prop-types";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(1, 2),
-    position: "absolute",
-    maxWidth: "500px",
-    zIndex: 1201,
-
-    [theme.breakpoints.only("xs")]: {
-      maxWidth: "300px",
-    },
-  },
-}));
 
 export default function ImageEditor(props) {
   const { open, handleClose, selection } = props;
   const editor = useSlateStatic();
-  const classes = useStyles();
 
   const [node, path] =
     Editor.above(editor, {
@@ -29,59 +22,19 @@ export default function ImageEditor(props) {
       match: (n) => n.type === "Image",
     }) || [];
 
-  const domNode = useMemo(() => {
-    if (node) {
-      try {
-        return ReactEditor.toDOMNode(editor, node);
-      } catch (error) {
-        return undefined;
-      }
-    }
-  }, [node]);
-
-  const {
-    x: nodeX,
-    y: nodeY,
-    height: nodeHeight,
-  } = useMemo(() => {
-    if (domNode) {
-      return domNode.getBoundingClientRect();
-    }
-    return {};
-  }, [domNode]);
-
-  const [state, setState] = useState();
-  const [top, setTop] = useState();
-  const [left, setLeft] = useState();
-
-  useEffect(() => {
-    if (state === "entered") {
-      return;
-    }
-
-    setTop(Number(nodeY || 0) + Number(nodeHeight || 0) + 2);
-    setLeft(Number(nodeX || 0));
-  }, [state, nodeY, nodeHeight, nodeX]);
-
   const onImageInputChange = (key) => (event) =>
     Transforms.setNodes(editor, { [key]: event.target.value }, { at: path });
 
   return (
-    <Grow
-      in={open}
-      onEntered={() => setState("entered")}
-      onExited={() => setState("exited")}
-      mountOnEnter
-      unmountOnExit
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="xs"
+      aria-labelledby="link-dialog-title"
     >
-      <Paper
-        onBlur={handleClose}
-        className={classes.root}
-        style={{
-          top: top,
-          left: left,
-        }}
-      >
+      <DialogTitle id="link-dialog-title">Link</DialogTitle>
+      <DialogContent>
         <Grid container alignItems="center" spacing={1}>
           <Grid item xs={12}>
             <TextField
@@ -138,8 +91,13 @@ export default function ImageEditor(props) {
             />
           </Grid>
         </Grid>
-      </Paper>
-    </Grow>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
