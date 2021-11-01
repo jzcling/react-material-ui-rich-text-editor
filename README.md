@@ -11,9 +11,11 @@ npm install --save @jeremyling/react-material-ui-rich-text-editor
 The following packages are peer dependencies and must be installed in your project for this package to work.
 
 ```
-@material-ui/core
+@emotion/react
+@emotion/styled
+@mui/icons-material
+@mui/material
 lodash
-mdi-material-ui
 react-color
 ```
 

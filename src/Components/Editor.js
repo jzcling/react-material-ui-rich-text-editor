@@ -1,4 +1,5 @@
 import { Editable, Slate, withReact } from "slate-react";
+import { styled } from "@mui/material/styles";
 import { createEditor } from "slate";
 import React, {
   useCallback,
@@ -19,15 +20,21 @@ import {
   serialize,
 } from "../Utils/EditorUtils";
 import LinkEditor from "./LinkEditor";
-import { Paper } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+import { Paper } from "@mui/material";
 import clsx from "clsx";
 import ImageEditor from "./ImageEditor";
 import { withHistory } from "slate-history";
 import { withHtml } from "../Utils/PasteUtils";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
+const PREFIX = "Editor";
+
+const classes = {
+  root: `${PREFIX}-root`,
+  focus: `${PREFIX}-focus`,
+};
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  [`&.${classes.root}`]: {
     border: `1px solid`,
     borderRadius: "4px",
     borderColor: "rgba(0, 0, 0, 0.23)",
@@ -36,7 +43,8 @@ const useStyles = makeStyles((theme) => ({
     },
     padding: "14px",
   },
-  focus: {
+
+  [`&.${classes.focus}`]: {
     borderWidth: "2px",
     borderColor: theme.palette.primary.main,
     "&:hover": {
@@ -57,7 +65,6 @@ const initialDocument = [
 export default function Editor(props) {
   const { html, document, onChange, onBlur, containerProps, editableProps } =
     props;
-  const classes = useStyles();
 
   const editorRef = useRef();
   if (!editorRef.current)
@@ -113,7 +120,7 @@ export default function Editor(props) {
   );
 
   return (
-    <Paper
+    <StyledPaper
       elevation={0}
       className={clsx({ [classes.focus]: focus }, classes.root)}
       onFocus={() => {
@@ -153,7 +160,7 @@ export default function Editor(props) {
           selection={selectionForImage}
         />
       </Slate>
-    </Paper>
+    </StyledPaper>
   );
 }
 

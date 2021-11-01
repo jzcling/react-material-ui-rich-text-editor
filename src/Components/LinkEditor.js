@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import isUrl from "is-url";
 import React, { useEffect, useMemo, useState } from "react";
 import { Editor, Transforms } from "slate";

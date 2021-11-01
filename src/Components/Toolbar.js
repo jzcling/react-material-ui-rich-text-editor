@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { styled } from "@mui/material/styles";
 import clsx from "clsx";
 import {
   Button,
@@ -12,28 +13,7 @@ import {
   Popover,
   TextField,
   Tooltip,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import {
-  CodeNotEqualVariant,
-  CodeTags,
-  FormatAlignCenter,
-  FormatAlignJustify,
-  FormatAlignLeft,
-  FormatAlignRight,
-  FormatBold,
-  FormatItalic,
-  FormatListBulleted,
-  FormatListNumbered,
-  FormatQuoteClose,
-  FormatQuoteOpen,
-  FormatStrikethroughVariant,
-  FormatUnderline,
-  HelpCircle,
-  Image,
-  Link,
-  Marker,
-} from "mdi-material-ui";
+} from "@mui/material";
 import PropTypes from "prop-types";
 import {
   isImageNodeAtSelection,
@@ -51,6 +31,64 @@ import { ReactEditor, useSlate } from "slate-react";
 import { Editor, Transforms } from "slate";
 import isHotkey from "is-hotkey";
 import { CompactPicker } from "react-color";
+import {
+  BorderColor,
+  Code,
+  FormatAlignCenter,
+  FormatAlignJustify,
+  FormatAlignLeft,
+  FormatAlignRight,
+  FormatBold,
+  FormatItalic,
+  FormatListBulleted,
+  FormatListNumbered,
+  FormatQuote,
+  FormatUnderlined,
+  Help,
+  Image,
+  Link,
+  StrikethroughS,
+} from "@mui/icons-material";
+
+const PREFIX = "Toolbar";
+
+const classes = {
+  toolbar: `${PREFIX}-toolbar`,
+  active: `${PREFIX}-active`,
+  margin: `${PREFIX}-margin`,
+  groupedButton: `${PREFIX}-groupedButton`,
+};
+
+const Root = styled("div")(({ theme }) => ({
+  [`&.${classes.toolbar}`]: {
+    display: "flex",
+    alignItems: "center",
+    overflow: "auto",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+    marginBottom: theme.spacing(1),
+  },
+
+  [`& .${classes.active}`]: {
+    backgroundColor: theme.palette.primary.light,
+    color: "white",
+    "&:hover": {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
+
+  [`& .${classes.margin}`]: {
+    marginLeft: "2px",
+  },
+
+  [`& .${classes.groupedButton}`]: {
+    padding: "12px",
+    borderRadius: "50%",
+  },
+}));
 
 const CHARACTER_STYLES = [
   {
@@ -66,27 +104,27 @@ const CHARACTER_STYLES = [
   {
     style: "underline",
     label: "Underline",
-    icon: <FormatUnderline />,
+    icon: <FormatUnderlined />,
   },
   {
     style: "strike",
     label: "Strikethrough",
-    icon: <FormatStrikethroughVariant />,
+    icon: <StrikethroughS />,
   },
   {
     style: "highlight",
     label: "Highlight",
-    icon: <Marker />,
+    icon: <BorderColor />,
   },
   {
     style: "code",
     label: "Code",
-    icon: <CodeTags />,
+    icon: <Code />,
   },
   {
     style: "quote",
     label: "Quote",
-    icon: <FormatQuoteClose />,
+    icon: <FormatQuote />,
   },
 ];
 
@@ -104,12 +142,12 @@ const GROUP_TYPES = [
   {
     style: "Quote Block",
     type: "Quote",
-    icon: <FormatQuoteOpen />,
+    icon: <FormatQuote />,
   },
   {
     style: "Code Block",
     type: "Code",
-    icon: <CodeNotEqualVariant />,
+    icon: <Code />,
   },
 ];
 
@@ -132,41 +170,13 @@ const TEXT_ALIGN_TYPES = [
   },
   {
     style: "Multiple",
-    icon: <HelpCircle />,
+    icon: <Help />,
   },
 ];
 
-const useStyles = makeStyles((theme) => ({
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    overflow: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-    marginBottom: theme.spacing(1),
-  },
-  active: {
-    backgroundColor: theme.palette.primary.light,
-    color: "white",
-    "&:hover": {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-  margin: {
-    marginLeft: "2px",
-  },
-  groupedButton: {
-    padding: "12px",
-    borderRadius: "50%",
-  },
-}));
-
 export default function Toolbar(props) {
   const { selection, disabled } = props;
-  const classes = useStyles();
+
   const editor = useSlate();
 
   var [fontSize, setFontSize] = useState();
@@ -301,7 +311,7 @@ export default function Toolbar(props) {
   const open = Boolean(anchorEl);
 
   return (
-    <div className={classes.toolbar}>
+    <Root className={classes.toolbar}>
       <TextField
         id="editor-font-size"
         variant="outlined"
@@ -330,6 +340,7 @@ export default function Toolbar(props) {
           // onClick will cause users to lose focus on selection
           onMouseDown={openColorPicker}
           style={{ backgroundColor: fontColor, marginLeft: "8px" }}
+          size="large"
         />
       </Tooltip>
 
@@ -358,6 +369,7 @@ export default function Toolbar(props) {
               // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
               // onClick will cause users to lose focus on selection
               onMouseDown={handleCharacterStyleChange(style.style)}
+              size="large"
             >
               {style.icon}
             </IconButton>
@@ -374,6 +386,7 @@ export default function Toolbar(props) {
             className={classes.active}
             disabled={disabled}
             onMouseDown={(event) => setAlignAnchorEl(event.currentTarget)}
+            size="large"
           >
             {activeTextAlign.icon}
           </IconButton>
@@ -437,6 +450,7 @@ export default function Toolbar(props) {
             })}
             disabled={disabled}
             onMouseDown={() => toggleLinkAtSelection(editor)}
+            size="large"
           >
             <Link />
           </IconButton>
@@ -455,12 +469,13 @@ export default function Toolbar(props) {
             })}
             disabled={disabled}
             onMouseDown={() => toggleImageAtSelection(editor)}
+            size="large"
           >
             <Image />
           </IconButton>
         </span>
       </Tooltip>
-    </div>
+    </Root>
   );
 }
 

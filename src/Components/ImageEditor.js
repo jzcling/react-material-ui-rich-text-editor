@@ -6,7 +6,7 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import React from "react";
 import { Editor, Transforms } from "slate";
 import { useSlateStatic } from "slate-react";

@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import json from "@rollup/plugin-json";
+import replace from "@rollup/plugin-replace";
 import analyze from "rollup-plugin-analyzer";
 import pkg from "./package.json";
 import { sizeSnapshot } from "rollup-plugin-size-snapshot";
@@ -26,6 +27,9 @@ const config = [
       },
     ],
     plugins: [
+      replace({
+        "process.env.NODE_ENV": JSON.stringify("production"),
+      }),
       json(),
       resolve(),
       commonjs({
@@ -62,7 +66,7 @@ const config = [
       terser(),
       autoExternal(),
     ],
-    external: [/lodash/, /@material-ui\/core/, "clsx", /@babel\/runtime/],
+    external: [/lodash/, /@mui\//, "clsx", /@babel\/runtime/],
   },
   {
     input: "src/index.js",
@@ -76,11 +80,13 @@ const config = [
         globals: {
           react: "React",
           "react-dom": "ReactDOM",
-          "mdi-material-ui": "mdiMaterialUi",
         },
       },
     ],
     plugins: [
+      replace({
+        "process.env.NODE_ENV": JSON.stringify("production"),
+      }),
       json(),
       resolve(),
       commonjs({
@@ -111,7 +117,7 @@ const config = [
           [
             "babel-plugin-import",
             {
-              libraryName: "@material-ui/core",
+              libraryName: "@mui/core",
               libraryDirectory: "esm",
               camel2DashComponentName: false,
             },
@@ -120,7 +126,7 @@ const config = [
           [
             "babel-plugin-import",
             {
-              libraryName: "@material-ui/icons",
+              libraryName: "@mui/icons-material",
               libraryDirectory: "esm",
               camel2DashComponentName: false,
             },
