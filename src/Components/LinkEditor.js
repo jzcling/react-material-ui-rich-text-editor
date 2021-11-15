@@ -18,14 +18,11 @@ export default function LinkEditor(props) {
 
   const [error, setError] = useState();
 
-  const [node, path] = useMemo(
-    () =>
-      Editor.above(editor, {
-        at: selection,
-        match: (n) => n.type === "Link",
-      }) || [],
-    [editor, selection]
-  );
+  const [node, path] =
+    Editor.above(editor, {
+      at: selection,
+      match: (n) => n.type === "Link",
+    }) || [];
 
   const onLinkURLChange = (event) =>
     Transforms.setNodes(editor, { url: event.target.value }, { at: path });
