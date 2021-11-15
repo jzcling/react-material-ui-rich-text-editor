@@ -1,6 +1,6 @@
 {
   "name": "@jeremyling/react-material-ui-rich-text-editor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "build": "NODE_ENV=production rollup -c"
   },
