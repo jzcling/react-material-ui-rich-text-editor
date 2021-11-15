@@ -80,12 +80,12 @@ export default function Editor(props) {
   const [focus, setFocus] = useState(false);
 
   const value = useMemo(() => {
-    if (document) {
-      return document;
-    }
     if (html) {
       const doc = new DOMParser().parseFromString(html, "text/html");
       return deserialize(doc.body) || initialDocument;
+    }
+    if (document) {
+      return document;
     }
     return initialDocument;
   }, [html, document]);

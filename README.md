@@ -77,8 +77,8 @@ export default function RichTextEditor(props) {
 
 | Prop           | Type     | Default        | Description                                                                                                                                           |
 | -------------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| html           | `string` | `undefined`    | HTML to be deserialized as content. Document takes precedence.                                                                                        |
-| document       | `array`  | `undefined`    | Document set as value for the Slate Context Provider. Takes precedence over HTML                                                                      |
+| html           | `string` | `undefined`    | HTML to be deserialized as content. Takes precedence over document.                                                                                   |
+| document       | `array`  | `undefined`    | Document set as value for the Slate Context Provider. If both `html` and `document` are set, `html` takes precedence.                                 |
 | onChange       | `func`   | `() => {}`     | Method passed to Slate Context Provider's onChange prop                                                                                               |
 | onBlur         | `func`   | `(html) => {}` | Additional method to run triggered by the onBlur event on the wrapper component. By default, the serialized html will be passed as the only argument. |
 | containerProps | `object` | `undefined`    | Props to pass to the Material UI Paper wrapper                                                                                                        |
