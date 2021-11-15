@@ -50,7 +50,7 @@ export default function LinkEditor(props) {
       <DialogContent>
         <TextField
           id="link-editor"
-          margin="dense"
+          size="small"
           label="URL"
           aria-label="url"
           variant="outlined"

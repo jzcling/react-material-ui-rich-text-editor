@@ -315,7 +315,7 @@ export default function Toolbar(props) {
       <TextField
         id="editor-font-size"
         variant="outlined"
-        margin="dense"
+        size="small"
         label="Font Size"
         aria-label="font size"
         value={fontSize || ""}

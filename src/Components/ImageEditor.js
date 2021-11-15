@@ -39,7 +39,7 @@ export default function ImageEditor(props) {
           <Grid item xs={12}>
             <TextField
               id="image-editor-url"
-              margin="dense"
+              size="small"
               fullWidth
               label="URL"
               aria-label="url"
@@ -51,7 +51,7 @@ export default function ImageEditor(props) {
           <Grid item xs={12}>
             <TextField
               id="image-editor-caption"
-              margin="dense"
+              size="small"
               fullWidth
               label="Caption"
               aria-label="caption"
@@ -63,7 +63,7 @@ export default function ImageEditor(props) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="image-editor-width"
-              margin="dense"
+              size="small"
               fullWidth
               label="Width"
               aria-label="width"
@@ -78,7 +78,7 @@ export default function ImageEditor(props) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="image-editor-height"
-              margin="dense"
+              size="small"
               fullWidth
               label="Height"
               aria-label="height"
