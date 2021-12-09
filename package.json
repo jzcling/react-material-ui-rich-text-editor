@@ -79,7 +79,7 @@
     "slate": "^0.70.0",
     "slate-history": "^0.66.0",
     "slate-hyperscript": "^0.67.0",
-    "slate-react": "^0.70.0"
+    "slate-react": "^0.70.1"
   },
   "sideEffects": false
 }
