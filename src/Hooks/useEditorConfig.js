@@ -165,9 +165,11 @@ function handleKeyDown(editor, event) {
     }
   }
   if (isHotkey("mod+l", { byKey: true }, event)) {
+    event.preventDefault();
     toggleBlock(editor, "Align Left");
   }
   if (isHotkey("mod+e", { byKey: true }, event)) {
+    event.preventDefault();
     toggleBlock(editor, "Align Center");
   }
   if (isHotkey("mod+r", { byKey: true }, event)) {
@@ -175,6 +177,7 @@ function handleKeyDown(editor, event) {
     toggleBlock(editor, "Align Right");
   }
   if (isHotkey("mod+j", { byKey: true }, event)) {
+    event.preventDefault();
     toggleBlock(editor, "Justify");
   }
 }
