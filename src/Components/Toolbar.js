@@ -17,15 +17,14 @@ import {
 import PropTypes from "prop-types";
 import {
   isImageNodeAtSelection,
-  isLinkNodeAtSelection,
   toggleImageAtSelection,
-  toggleLinkAtSelection,
   toggleBlock,
   toggleMark,
   getActiveStyles,
   getActiveBlock,
   getActiveFontSize,
   getActiveFontColor,
+  isLinkActive,
 } from "../Utils/EditorUtils";
 import { ReactEditor, useSlate } from "slate-react";
 import { Editor, Transforms } from "slate";
@@ -175,7 +174,7 @@ const TEXT_ALIGN_TYPES = [
 ];
 
 export default function Toolbar(props) {
-  const { selection, disabled } = props;
+  const { selection, disabled, setOpenLinkEditor } = props;
 
   const editor = useSlate();
 
@@ -446,10 +445,10 @@ export default function Toolbar(props) {
           <IconButton
             aria-label="link"
             className={clsx(classes.margin, {
-              [classes.active]: isLinkNodeAtSelection(editor, editor.selection),
+              [classes.active]: isLinkActive(editor),
             })}
             disabled={disabled}
-            onMouseDown={() => toggleLinkAtSelection(editor)}
+            onMouseDown={() => setOpenLinkEditor(true)}
             size="large"
           >
             <Link />
@@ -482,9 +481,11 @@ export default function Toolbar(props) {
 Toolbar.defaultProps = {
   selection: undefined,
   disabled: true,
+  setOpenLinkEditor: () => {},
 };
 
 Toolbar.propTypes = {
   selection: PropTypes.object,
   disabled: PropTypes.bool,
+  setOpenLinkEditor: PropTypes.func,
 };

@@ -7,33 +7,30 @@ import {
   TextField,
 } from "@mui/material";
 import isUrl from "is-url";
-import React, { useEffect, useMemo, useState } from "react";
-import { Editor, Transforms } from "slate";
-import { useSlateStatic } from "slate-react";
+import React, { useState } from "react";
+import { Editor, Element } from "slate";
 import PropTypes from "prop-types";
+import { removeLink, setLink } from "../Utils/EditorUtils";
 
 export default function LinkEditor(props) {
-  const { open, handleClose, selection } = props;
-  const editor = useSlateStatic();
+  const { open, handleClose, editor } = props;
 
   const [error, setError] = useState();
 
-  const [node, path] =
-    Editor.above(editor, {
-      at: selection,
-      match: (n) => n.type === "Link",
-    }) || [];
+  const [location] = Editor.nodes(editor, {
+    match: (n) =>
+      !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
+  });
 
-  const onLinkURLChange = (event) =>
-    Transforms.setNodes(editor, { url: event.target.value }, { at: path });
-
-  useEffect(() => {
-    if (!isUrl((node || {}).url)) {
+  const onLinkURLChange = (event) => {
+    const link = event.target.value;
+    if (!isUrl(link)) {
       setError("Invalid link");
     } else {
-      setError(undefined);
+      setError();
     }
-  }, [node]);
+    setLink(editor, link);
+  };
 
   return (
     <Dialog
@@ -51,7 +48,7 @@ export default function LinkEditor(props) {
           label="URL"
           aria-label="url"
           variant="outlined"
-          value={(node || {}).url || ""}
+          value={location?.[0]?.url || ""}
           onChange={onLinkURLChange}
           error={!!error}
           helperText={error}
@@ -59,8 +56,17 @@ export default function LinkEditor(props) {
         />
       </DialogContent>
       <DialogActions>
+        <Button
+          onClick={() => {
+            removeLink(editor);
+            handleClose();
+          }}
+          color="secondary"
+        >
+          Remove
+        </Button>
         <Button onClick={handleClose} color="primary">
-          OK
+          Save
         </Button>
       </DialogActions>
     </Dialog>
@@ -70,11 +76,13 @@ export default function LinkEditor(props) {
 LinkEditor.defaultProps = {
   open: false,
   handleClose: () => {},
+  editor: null,
   selection: null,
 };
 
 LinkEditor.propTypes = {
   open: PropTypes.bool,
   handleClose: PropTypes.func,
+  editor: PropTypes.object,
   selection: PropTypes.object,
 };

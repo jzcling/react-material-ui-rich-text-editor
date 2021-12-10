@@ -1,13 +1,7 @@
 import { Editable, Slate, withReact } from "slate-react";
 import { styled } from "@mui/material/styles";
 import { createEditor } from "slate";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
 import useSelection from "../Hooks/useSelection";
@@ -15,8 +9,6 @@ import Toolbar from "./Toolbar";
 import {
   deserialize,
   identifyLinksInTextIfAny,
-  isImageNodeAtSelection,
-  isLinkNodeAtSelection,
   serialize,
 } from "../Utils/EditorUtils";
 import LinkEditor from "./LinkEditor";
@@ -74,8 +66,8 @@ export default function Editor(props) {
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
   const [previousSelection, selection, setSelection] = useSelection(editor);
 
-  const [selectionForLink, setSelectionForLink] = useState();
-  const [selectionForImage, setSelectionForImage] = useState();
+  const [openLinkEditor, setOpenLinkEditor] = useState(false);
+  const [openImageEditor, setOpenImageEditor] = useState(false);
 
   const [focus, setFocus] = useState(false);
 
@@ -89,26 +81,6 @@ export default function Editor(props) {
     }
     return initialDocument;
   }, [html, document]);
-
-  useEffect(() => {
-    if (focus) {
-      const sel = selection || previousSelection;
-      if (isLinkNodeAtSelection(editor, sel)) {
-        setSelectionForLink(sel);
-      } else {
-        setSelectionForLink(undefined);
-      }
-
-      if (isImageNodeAtSelection(editor, sel)) {
-        setSelectionForImage(sel);
-      } else {
-        setSelectionForImage(undefined);
-      }
-    } else {
-      setSelectionForImage(undefined);
-      setSelectionForLink(undefined);
-    }
-  }, [editor, selection, previousSelection, focus]);
 
   const handleChange = useCallback(
     (document) => {
@@ -140,7 +112,11 @@ export default function Editor(props) {
       {...containerProps}
     >
       <Slate editor={editor} value={value} onChange={handleChange}>
-        <Toolbar selection={selection || previousSelection} disabled={!focus} />
+        <Toolbar
+          selection={selection || previousSelection}
+          disabled={!focus}
+          setOpenLinkEditor={setOpenLinkEditor}
+        />
         <Editable
           renderElement={renderElement}
           renderLeaf={renderLeaf}
@@ -150,14 +126,13 @@ export default function Editor(props) {
         />
 
         <LinkEditor
-          open={!!selectionForLink && focus}
-          handleClose={() => setSelectionForLink(undefined)}
-          selection={selectionForLink}
+          open={openLinkEditor && focus}
+          handleClose={() => setOpenLinkEditor(false)}
+          editor={editor}
         />
         <ImageEditor
-          open={!!selectionForImage && focus}
-          handleClose={() => setSelectionForImage(undefined)}
-          selection={selectionForImage}
+          open={openImageEditor && focus}
+          handleClose={() => setOpenImageEditor(false)}
         />
       </Slate>
     </StyledPaper>

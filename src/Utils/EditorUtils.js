@@ -113,27 +113,40 @@ export const getActiveFontColor = (editor) => {
   return "#181d23";
 };
 
-export function isLinkNodeAtSelection(editor, selection) {
-  if (!selection) {
-    return false;
-  }
-
-  return !!Editor.above(editor, {
-    at: selection,
-    match: (n) => n.type === "Link",
+export function isLinkActive(editor) {
+  const [link] = Editor.nodes(editor, {
+    match: (n) =>
+      !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
   });
+  return !!link;
 }
 
-export function toggleLinkAtSelection(editor) {
-  if (!isLinkNodeAtSelection(editor, editor.selection)) {
-    Transforms.wrapNodes(
-      editor,
-      { type: "Link", url: "", children: [] },
-      { split: true, at: editor.selection }
-    );
-  } else {
+export function setLink(editor, url) {
+  if (editor.selection) {
+    removeLink(editor);
+
+    const { selection } = editor;
+    const isCollapsed = selection && Range.isCollapsed(selection);
+    const link = {
+      type: "Link",
+      url,
+      children: isCollapsed ? [{ text: url }] : [],
+    };
+
+    if (isCollapsed) {
+      Transforms.insertNodes(editor, link);
+    } else {
+      Transforms.wrapNodes(editor, link, { split: true });
+      Transforms.collapse(editor, { edge: "end" });
+    }
+  }
+}
+
+export function removeLink(editor) {
+  if (isLinkActive(editor)) {
     Transforms.unwrapNodes(editor, {
-      match: (n) => Element.isElement(n) && n.type === "Link",
+      match: (n) =>
+        !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
     });
   }
 }
