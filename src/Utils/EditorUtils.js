@@ -28,18 +28,18 @@ export const toggleBlock = (editor, format, itemType) => {
   if (isAlignment) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
-        ALIGNMENT_TYPES.includes(
-          !Editor.isEditor(n) && Element.isElement(n) && n.type
-        ),
+        !Editor.isEditor(n) &&
+        Element.isElement(n) &&
+        ALIGNMENT_TYPES.includes(n.type),
       split: true,
     });
   }
   if (isGroup) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
-        GROUP_TYPES.includes(
-          !Editor.isEditor(n) && Element.isElement(n) && n.type
-        ),
+        !Editor.isEditor(n) &&
+        Element.isElement(n) &&
+        GROUP_TYPES.includes(n.type),
       split: true,
     });
   }
@@ -67,7 +67,11 @@ export const toggleMark = (editor, format, value = true) => {
 };
 
 export const isBlockActive = (editor, format) => {
+  const { selection } = editor;
+  if (!selection) return false;
+
   const [match] = Editor.nodes(editor, {
+    at: Editor.unhangRange(editor, selection),
     match: (n) =>
       !Editor.isEditor(n) && Element.isElement(n) && n.type === format,
   });
@@ -113,14 +117,6 @@ export const getActiveFontColor = (editor) => {
   return "#181d23";
 };
 
-export function isLinkActive(editor) {
-  const [link] = Editor.nodes(editor, {
-    match: (n) =>
-      !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
-  });
-  return !!link;
-}
-
 export function setLink(editor, url) {
   if (editor.selection) {
     removeLink(editor);
@@ -143,7 +139,7 @@ export function setLink(editor, url) {
 }
 
 export function removeLink(editor) {
-  if (isLinkActive(editor)) {
+  if (isBlockActive(editor, "Link")) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
         !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
@@ -224,56 +220,32 @@ export function identifyLinksInTextIfAny(editor) {
   }
 }
 
-export function isImageNodeAtSelection(editor, selection) {
-  if (!selection) {
-    return false;
-  }
-
-  return !!Editor.above(editor, {
-    at: selection,
-    match: (n) => n.type === "Image",
-  });
+export function insertImage(editor, url) {
+  const text = { text: "" };
+  const image = {
+    type: "Image",
+    url: url,
+    caption: "Image",
+    height: 150,
+    width: 150,
+    style: {
+      maxWidth: "100%",
+      maxHeight: "20em",
+      objectFit: "contain",
+    },
+    children: [text],
+  };
+  Transforms.insertNodes(editor, image);
 }
 
-export function toggleImageAtSelection(editor) {
-  if (!isImageNodeAtSelection(editor, editor.selection)) {
-    const isSelectionCollapsed = Range.isCollapsed(editor.selection);
-    if (isSelectionCollapsed) {
-      Transforms.insertNodes(
-        editor,
-        {
-          type: "Image",
-          url: "https://via.placeholder.com/150",
-          caption: "Image",
-          height: 150,
-          width: 150,
-          style: {
-            objectFit: "contain",
-          },
-          children: [],
-        },
-        { at: editor.selection }
-      );
-    } else {
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: "Image",
-          url: "https://via.placeholder.com/150",
-          caption: "Image",
-          height: 150,
-          width: 150,
-          style: {
-            objectFit: "contain",
-          },
-          children: [],
-        },
-        { split: true, at: editor.selection }
-      );
-    }
-  } else {
-    Transforms.unwrapNodes(editor, {
-      match: (n) => Element.isElement(n) && n.type === "Link",
+export function removeImage(editor) {
+  if (isBlockActive(editor, "Image")) {
+    const [location] = Editor.nodes(editor, {
+      match: (n) =>
+        !Editor.isEditor(n) && Element.isElement(n) && n.type === "Image",
+    });
+    Transforms.removeNodes(editor, {
+      at: location[1],
     });
   }
 }
@@ -281,6 +253,12 @@ export function toggleImageAtSelection(editor) {
 export const serialize = (node) => {
   if (Text.isText(node)) {
     let string = escapeHtml(node.text);
+    if (node.code) {
+      string = `<code>${string}</code>`;
+    }
+    if (node.quote) {
+      string = `<q>${string}</q>`;
+    }
     if (node.bold) {
       string = `<strong>${string}</strong>`;
     }
@@ -295,12 +273,6 @@ export const serialize = (node) => {
     }
     if (node.highlight) {
       string = `<mark>${string}</mark>`;
-    }
-    if (node.code) {
-      string = `<code>${string}</code>`;
-    }
-    if (node.quote) {
-      string = `<q>${string}</q>`;
     }
     const style = {
       "font-size": "16px",
@@ -328,12 +300,8 @@ export const serialize = (node) => {
       return `<p>${children}</p>`;
     case "Quote Block":
       return `<blockquote>${children}</blockquote>`;
-    case "Quote":
-      return `<q>${children}</q>`;
     case "Code Block":
       return `<pre style="background-color: #eee;border: 1px solid #999;border-radius: 4px;display: block;padding: 8px 16px;">${children}</pre>`;
-    case "Code":
-      return `<code>${children}</code>`;
     case "Ordered List":
       return `<ol>${children}</ol>`;
     case "Unordered List":
@@ -343,7 +311,7 @@ export const serialize = (node) => {
     case "Link":
       return `<a href="${escapeHtml(node.url)}">${children}</a>`;
     case "Image":
-      return `<span 
+      return `<figure 
         content-editable="false" 
         style="display: flex;flex-direction: column;justify-content: center;align-items: center;"
       >
@@ -352,10 +320,11 @@ export const serialize = (node) => {
           alt="${escapeHtml(node.caption)}" 
           width="${node.width}" 
           height="${node.height}" 
+          style="max-width: 100%; max-height: 20em; object-fit: contain"
         />
-        <span>${escapeHtml(node.caption)}</span>
+        <figcaption>${escapeHtml(node.caption)}</figcaption>
         ${children}
-      </span>`;
+      </figure>`;
     case "Align Left":
       return `<div style="text-align: left;">${children}</div>`;
     case "Align Center":
@@ -369,130 +338,123 @@ export const serialize = (node) => {
   }
 };
 
+const ELEMENT_TAGS = {
+  P: () => ({ type: "Paragraph" }),
+  BLOCKQUOTE: () => ({ type: "Quote Block" }),
+  PRE: () => ({ type: "Code Block" }),
+  OL: () => ({ type: "Ordered List" }),
+  UL: () => ({ type: "Unordered List" }),
+  LI: () => ({ type: "List Item" }),
+  A: (el) => ({ type: "Link", url: el.getAttribute("href") }),
+  IMG: (el) => ({
+    type: "Image",
+    url: el.getAttribute("src"),
+    caption: el.getAttribute("alt"),
+    height: el.getAttribute("height"),
+    width: el.getAttribute("width"),
+    style: {
+      maxWidth: "100%",
+      maxHeight: "20em",
+      objectFit: "contain",
+    },
+  }),
+  FIGURE: (el) => {
+    const img = [...el.childNodes].find((child) => child.nodeName === "IMG");
+    return {
+      type: "Image",
+      url: img.getAttribute("src"),
+      caption: img.getAttribute("alt"),
+      height: img.getAttribute("height"),
+      width: img.getAttribute("width"),
+      style: {
+        maxWidth: "100%",
+        maxHeight: "20em",
+        objectFit: "contain",
+      },
+    };
+  },
+  DIV: (el) => {
+    if (el.style?.textAlign) {
+      switch (el.style.textAlign) {
+        case "left":
+          return { type: "Align Left" };
+        case "center":
+          return { type: "Align Center" };
+        case "right":
+          return { type: "Align Left" };
+        case "justify":
+          return { type: "Justify" };
+        default:
+          return;
+      }
+    }
+  },
+};
+
+// COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
+const TEXT_TAGS = {
+  CODE: () => ({ code: true }),
+  Quote: () => ({ quote: true }),
+  STRONG: () => ({ bold: true }),
+  EM: () => ({ italic: true }),
+  I: () => ({ italic: true }),
+  U: () => ({ underline: true }),
+  DEL: () => ({ strike: true }),
+  S: () => ({ strike: true }),
+  MARK: () => ({ highlight: true }),
+  H1: () => ({ fontSize: 32, bold: true }),
+  H2: () => ({ fontSize: 24, bold: true }),
+  H3: () => ({ fontSize: 19, bold: true }),
+  H4: () => ({ fontSize: 16, bold: true }),
+  H5: () => ({ fontSize: 13, bold: true }),
+  H6: () => ({ fontSize: 11, bold: true }),
+  DIV: (el) => el.textContent,
+};
+
 export const deserialize = (el) => {
   if (el.nodeType === 3) {
-    return jsx("text", { fontSize: 16 }, [el.textContent]);
+    return el.textContent;
   } else if (el.nodeType !== 1) {
     return null;
+  } else if (el.nodeName === "BR") {
+    return "\n";
   }
 
-  let children = Array.from(el.childNodes).map(deserialize);
+  const { nodeName } = el;
+  let parent = el;
+
+  if (nodeName === "FIGURE") {
+    const img = [...el.childNodes].find((child) => child.nodeName === "IMG");
+    if (img) {
+      parent = img;
+    }
+  }
+
+  let children = Array.from(parent.childNodes).map(deserialize).flat();
 
   if (children.length === 0) {
     children = [{ text: "" }];
   }
 
-  switch (el.nodeName) {
-    case "BODY":
-      if (el.firstChild && el.firstChild.nodeType === 3) {
-        return [jsx("element", { type: "Paragraph" }, children)];
-      } else {
-        return jsx("fragment", {}, children);
-      }
-    case "BR":
-      return "\n";
-    case "P":
-      return jsx("element", { type: "Paragraph" }, children);
-    case "BLOCKQUOTE":
-      return jsx("element", { type: "Quote Block" }, children);
-    case "Q":
-      return jsx("element", { type: "Quote" }, children);
-    case "PRE":
-      if (el.hasChildNodes() && el.firstChild.nodeName === "CODE") {
-        return jsx("element", { type: "Code Block" }, children);
-      }
-      return el.textContent;
-    case "CODE":
-      return jsx("element", { type: "Code" }, children);
-    case "OL":
-      return jsx("element", { type: "Ordered List" }, children);
-    case "UL":
-      return jsx("element", { type: "Unordered List" }, children);
-    case "LI":
-      return jsx("element", { type: "List Item" }, children);
-    case "A":
-      return jsx(
-        "element",
-        {
-          type: "Link",
-          url: el.getAttribute("href"),
-        },
-        children
-      );
-    case "IMG":
-      return jsx(
-        "element",
-        {
-          type: "Image",
-          url: el.getAttribute("src"),
-          caption: el.getAttribute("alt"),
-          height: el.getAttribute("height"),
-          width: el.getAttribute("width"),
-        },
-        children
-      );
-    case "DIV":
-      if (el.style && el.style.textAlign) {
-        switch (el.style.textAlign) {
-          case "left":
-            return jsx("element", { type: "Align Left" }, children);
-          case "center":
-            return jsx("element", { type: "Align Center" }, children);
-          case "right":
-            return jsx("element", { type: "Align Left" }, children);
-          case "justify":
-            return jsx("element", { type: "Justify" }, children);
-          default:
-            return el.textContent;
-        }
-      }
-      return el.textContent;
-    case "STRONG":
-      return jsx("text", { bold: true }, children);
-    case "EM":
-      return jsx("text", { italic: true }, children);
-    case "U":
-      return jsx("text", { underline: true }, children);
-    case "DEL":
-      return jsx("text", { strike: true }, children);
-    case "MARK":
-      return jsx("text", { highlight: true }, children);
-    case "SPAN":
-      if (el.style) {
-        const style = {
-          fontSize: 16,
-        };
-        if (el.style.fontSize) {
-          style.fontSize = parseInt(
-            String(el.style.fontSize).replace("px", "")
-          );
-        }
-        if (el.style.color) {
-          style.color = el.style.color;
-        }
-        return jsx("text", style, children);
-      }
-      if (el.childNodes.length > 0) {
-        if (
-          el.childNodes[0].nodeName === "IMG" &&
-          el.childNodes[1].nodeName === "SPAN"
-        ) {
-          const img = el.childNodes[0];
-          return jsx(
-            "element",
-            {
-              type: "Image",
-              url: img.getAttribute("src"),
-              caption: img.getAttribute("alt"),
-              height: img.getAttribute("height"),
-              width: img.getAttribute("width"),
-            },
-            [{ text: "" }]
-          );
-        }
-      }
-      return jsx("text", { fontSize: 16 }, children);
-    default:
-      return jsx("text", { fontSize: 16 }, children);
+  if (el.nodeName === "BODY") {
+    return jsx("fragment", {}, children);
   }
+
+  if (ELEMENT_TAGS[nodeName]) {
+    const attrs = ELEMENT_TAGS[nodeName](el);
+    if (attrs) {
+      return jsx("element", attrs, children);
+    }
+  }
+
+  if (TEXT_TAGS[nodeName]) {
+    const attrs = TEXT_TAGS[nodeName](el);
+    return (
+      children
+        // .filter((child) => Text.isText(child))
+        .map((child) => jsx("text", attrs, child))
+    );
+  }
+
+  return children;
 };
