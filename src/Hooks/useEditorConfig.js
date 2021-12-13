@@ -8,6 +8,8 @@ import {
   toggleMark,
 } from "../Utils/EditorUtils";
 import { Editor } from "slate";
+import Image from "../Components/Image";
+import CodeBlock from "../Components/CodeBlock";
 
 export default function useEditorConfig(editor) {
   const { isVoid, isInline } = editor;
@@ -30,12 +32,8 @@ function renderElement({ element, children, attributes }) {
       return <p {...attributes}>{children}</p>;
     case "Quote Block":
       return <blockquote {...attributes}>{children}</blockquote>;
-    case "Quote":
-      return <q {...attributes}>{children}</q>;
     case "Code Block":
       return <CodeBlock {...{ element, children, attributes }} />;
-    case "Code":
-      return <code {...attributes}>{children}</code>;
     case "Ordered List":
       return <ol {...attributes}>{children}</ol>;
     case "Unordered List":
@@ -180,47 +178,14 @@ function handleKeyDown(editor, event) {
     event.preventDefault();
     toggleBlock(editor, "Justify");
   }
+  if (isHotkey("mod+z", { byKey: true }, event)) {
+    event.preventDefault();
+    event.stopPropagation();
+    editor.undo();
+  }
+  if (isHotkey("mod+shift+z", { byKey: true }, event)) {
+    event.preventDefault();
+    event.stopPropagation();
+    editor.redo();
+  }
 }
-
-const Image = (props) => {
-  const { element, children, attributes } = props;
-  return (
-    <span
-      contentEditable={false}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      {...attributes}
-    >
-      <img
-        src={String(element.url)}
-        alt={element.caption}
-        width={element.width}
-        height={element.height}
-      />
-      {element.caption && <span>{element.caption}</span>}
-      {children}
-    </span>
-  );
-};
-
-const CodeBlock = (props) => {
-  const { element, children, attributes } = props;
-  return (
-    <pre
-      style={{
-        backgroundColor: `#eee`,
-        border: `1px solid #999`,
-        borderRadius: "4px",
-        display: "block",
-        padding: "8px 16px",
-      }}
-      {...attributes}
-    >
-      {children}
-    </pre>
-  );
-};
