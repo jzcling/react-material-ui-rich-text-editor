@@ -1,7 +1,6 @@
 import { Editable, Slate, withReact } from "slate-react";
-import { styled } from "@mui/material/styles";
 import { createEditor } from "slate";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
 import useSelection from "../Hooks/useSelection";
@@ -12,42 +11,12 @@ import {
   serialize,
 } from "../Utils/EditorUtils";
 import LinkEditor from "./LinkEditor";
-import { Paper } from "@mui/material";
-import clsx from "clsx";
+import { ClickAwayListener, debounce, Paper } from "@mui/material";
 import ImageEditor from "./ImageEditor";
 import { withHistory } from "slate-history";
 import { withHtml } from "../Utils/PasteUtils";
 
-const PREFIX = "Editor";
-
-const classes = {
-  root: `${PREFIX}-root`,
-  focus: `${PREFIX}-focus`,
-};
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  [`&.${classes.root}`]: {
-    border: `1px solid`,
-    borderRadius: "4px",
-    borderColor: "rgba(0, 0, 0, 0.23)",
-    "&:hover": {
-      borderColor: "rgba(0, 0, 0, 0.87)",
-    },
-    padding: "14px",
-  },
-
-  [`&.${classes.focus}`]: {
-    borderWidth: "2px",
-    borderColor: theme.palette.primary.main,
-    "&:hover": {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-}));
-
-var cancelBlur = false;
-
-const initialDocument = [
+const initialValue = [
   {
     type: "Paragraph",
     children: [{ text: "" }],
@@ -55,15 +24,15 @@ const initialDocument = [
 ];
 
 export default function Editor(props) {
-  const { html, document, onChange, onBlur, containerProps, editableProps } =
-    props;
+  const { html, updateHtml, containerProps, editableProps } = props;
 
   const editorRef = useRef();
   if (!editorRef.current)
-    editorRef.current = withHtml(withHistory(withReact(createEditor())));
+    editorRef.current = withHtml(withReact(withHistory(createEditor())));
   const editor = editorRef.current;
 
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
+
   const [previousSelection, selection, setSelection] = useSelection(editor);
 
   const [openLinkEditor, setOpenLinkEditor] = useState(false);
@@ -71,84 +40,85 @@ export default function Editor(props) {
 
   const [focus, setFocus] = useState(false);
 
-  const value = useMemo(() => {
-    if (html) {
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      return deserialize(doc.body) || initialDocument;
-    }
-    if (document) {
-      return document;
-    }
-    return initialDocument;
-  }, [html, document]);
+  const [value, setValue] = useState(() => {
+    if (!html) return initialValue;
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    return deserialize(parsed.body);
+  });
 
-  const handleChange = useCallback(
-    (document) => {
-      onChange(document);
-      setSelection(editor.selection);
-      identifyLinksInTextIfAny(editor);
-    },
-    [editor, onChange, setSelection]
+  const debouncedUpdateHtml = useMemo(
+    () =>
+      debounce((editor) => {
+        const html = serialize(editor);
+        updateHtml(html);
+      }, 700),
+    [updateHtml]
   );
 
-  return (
-    <StyledPaper
-      elevation={0}
-      className={clsx({ [classes.focus]: focus }, classes.root)}
-      onFocus={() => {
-        cancelBlur = true;
-        setFocus(true);
-      }}
-      onBlur={() => {
-        cancelBlur = false;
-        setTimeout(() => {
-          if (!cancelBlur) {
-            setFocus(false);
-            const html = serialize(editor);
-            onBlur(html);
-          }
-        }, 100);
-      }}
-      {...containerProps}
-    >
-      <Slate editor={editor} value={value} onChange={handleChange}>
-        <Toolbar
-          selection={selection || previousSelection}
-          disabled={!focus}
-          setOpenLinkEditor={setOpenLinkEditor}
-        />
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onKeyDown={onKeyDown}
-          spellCheck
-          {...editableProps}
-        />
+  const handleChange = (value) => {
+    setValue(value);
+    debouncedUpdateHtml(editor);
+    setSelection(editor.selection);
+    identifyLinksInTextIfAny(editor);
+  };
 
-        <LinkEditor
-          open={openLinkEditor && focus}
-          handleClose={() => setOpenLinkEditor(false)}
-          editor={editor}
-        />
-        <ImageEditor
-          open={openImageEditor && focus}
-          handleClose={() => setOpenImageEditor(false)}
-        />
-      </Slate>
-    </StyledPaper>
+  return (
+    <Slate editor={editor} value={value} onChange={handleChange}>
+      <ClickAwayListener onClickAway={() => setFocus(false)}>
+        <Paper
+          elevation={0}
+          sx={{
+            border: focus ? "2px solid" : "1px solid",
+            borderRadius: "4px",
+            borderColor: (theme) =>
+              focus ? theme.palette.primary.main : "rgba(0, 0, 0, 0.23)",
+            "&:hover": {
+              borderColor: (theme) => theme.palette.primary.main,
+            },
+            padding: "14px",
+          }}
+          onFocus={() => {
+            setFocus(true);
+          }}
+          {...containerProps}
+        >
+          <Toolbar
+            selection={selection || previousSelection}
+            disabled={!focus}
+            setOpenLinkEditor={setOpenLinkEditor}
+            setOpenImageEditor={setOpenImageEditor}
+          />
+          <Editable
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            onKeyDown={onKeyDown}
+            spellCheck
+            {...editableProps}
+          />
+
+          <LinkEditor
+            open={openLinkEditor && focus}
+            handleClose={() => setOpenLinkEditor(false)}
+            editor={editor}
+          />
+          <ImageEditor
+            open={openImageEditor && focus}
+            handleClose={() => setOpenImageEditor(false)}
+            editor={editor}
+          />
+        </Paper>
+      </ClickAwayListener>
+    </Slate>
   );
 }
 
 Editor.defaultProps = {
-  onChange: () => {},
-  onBlur: (html) => {},
+  updateHtml: (html) => {},
 };
 
 Editor.propTypes = {
   html: PropTypes.string,
-  document: PropTypes.array,
-  onChange: PropTypes.func,
-  onBlur: PropTypes.func,
+  updateHtml: PropTypes.func,
   containerProps: PropTypes.object,
   editableProps: PropTypes.object,
 };
