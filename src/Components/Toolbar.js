@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { styled } from "@mui/material/styles";
-import clsx from "clsx";
 import {
+  Box,
   Button,
   ButtonGroup,
   Divider,
@@ -16,17 +15,16 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 import {
-  isImageNodeAtSelection,
-  toggleImageAtSelection,
   toggleBlock,
   toggleMark,
   getActiveStyles,
   getActiveBlock,
   getActiveFontSize,
   getActiveFontColor,
-  isLinkActive,
+  insertImage,
+  isBlockActive,
 } from "../Utils/EditorUtils";
-import { ReactEditor, useSlate } from "slate-react";
+import { ReactEditor, useSlateStatic } from "slate-react";
 import { Editor, Transforms } from "slate";
 import isHotkey from "is-hotkey";
 import { CompactPicker } from "react-color";
@@ -49,45 +47,22 @@ import {
   StrikethroughS,
 } from "@mui/icons-material";
 
-const PREFIX = "Toolbar";
-
-const classes = {
-  toolbar: `${PREFIX}-toolbar`,
-  active: `${PREFIX}-active`,
-  margin: `${PREFIX}-margin`,
-  groupedButton: `${PREFIX}-groupedButton`,
+const activeStyle = {
+  backgroundColor: (theme) => theme.palette.primary.light,
+  color: "white",
+  "&:hover": {
+    backgroundColor: (theme) => theme.palette.primary.main,
+  },
 };
 
-const Root = styled("div")(({ theme }) => ({
-  [`&.${classes.toolbar}`]: {
-    display: "flex",
-    alignItems: "center",
-    overflow: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-    marginBottom: theme.spacing(1),
-  },
+const buttonMarginLeft = {
+  ml: "2px",
+};
 
-  [`& .${classes.active}`]: {
-    backgroundColor: theme.palette.primary.light,
-    color: "white",
-    "&:hover": {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-
-  [`& .${classes.margin}`]: {
-    marginLeft: "2px",
-  },
-
-  [`& .${classes.groupedButton}`]: {
-    padding: "12px",
-    borderRadius: "50%",
-  },
-}));
+const groupedButtonStyle = {
+  padding: "12px",
+  borderRadius: "50%",
+};
 
 const CHARACTER_STYLES = [
   {
@@ -174,10 +149,8 @@ const TEXT_ALIGN_TYPES = [
 ];
 
 export default function Toolbar(props) {
-  const { selection, disabled, setOpenLinkEditor } = props;
-
-  const editor = useSlate();
-
+  const { selection, disabled, setOpenLinkEditor, setOpenImageEditor } = props;
+  const editor = useSlateStatic();
   var [fontSize, setFontSize] = useState();
   var [fontColor, setFontColor] = useState();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -224,6 +197,7 @@ export default function Toolbar(props) {
         );
       }
       toggleMark(editor, style);
+      ReactEditor.focus(editor);
     },
     [editor, selection]
   );
@@ -242,6 +216,7 @@ export default function Toolbar(props) {
       }
       setAlignAnchorEl(undefined);
       toggleBlock(editor, align);
+      ReactEditor.focus(editor);
     },
     [editor, selection]
   );
@@ -259,6 +234,7 @@ export default function Toolbar(props) {
         );
       }
       toggleBlock(editor, style, type);
+      ReactEditor.focus(editor);
     },
     [editor, selection]
   );
@@ -310,7 +286,19 @@ export default function Toolbar(props) {
   const open = Boolean(anchorEl);
 
   return (
-    <Root className={classes.toolbar}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        overflow: "auto",
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+        mb: 1,
+      }}
+    >
       <TextField
         id="editor-font-size"
         variant="outlined"
@@ -333,14 +321,17 @@ export default function Toolbar(props) {
       />
 
       <Tooltip title="Font Colour">
-        <IconButton
-          aria-label="font colour"
-          // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
-          // onClick will cause users to lose focus on selection
-          onMouseDown={openColorPicker}
-          style={{ backgroundColor: fontColor, marginLeft: "8px" }}
-          size="large"
-        />
+        <span>
+          <IconButton
+            aria-label="font colour"
+            // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
+            // onClick will cause users to lose focus on selection
+            onMouseDown={openColorPicker}
+            style={{ backgroundColor: fontColor, marginLeft: "8px" }}
+            size="large"
+            disabled={disabled}
+          />
+        </span>
       </Tooltip>
 
       <Popover
@@ -361,9 +352,12 @@ export default function Toolbar(props) {
           <span>
             <IconButton
               aria-label={style.label}
-              className={clsx(classes.margin, {
-                [classes.active]: getActiveStyles(editor).has(style.style),
-              })}
+              sx={{
+                ...buttonMarginLeft,
+                ...(getActiveStyles(editor).has(style.style)
+                  ? activeStyle
+                  : {}),
+              }}
               disabled={disabled}
               // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
               // onClick will cause users to lose focus on selection
@@ -382,7 +376,7 @@ export default function Toolbar(props) {
         <span>
           <IconButton
             aria-label={activeTextAlign.style}
-            className={classes.active}
+            sx={activeStyle}
             disabled={disabled}
             onMouseDown={(event) => setAlignAnchorEl(event.currentTarget)}
             size="large"
@@ -424,9 +418,11 @@ export default function Toolbar(props) {
             <Button
               key={type.style}
               aria-label={type.style}
-              className={clsx(classes.margin, classes.groupedButton, {
-                [classes.active]: activeGroup.style === type.style,
-              })}
+              sx={{
+                ...buttonMarginLeft,
+                ...groupedButtonStyle,
+                ...(activeGroup.style === type.style ? activeStyle : {}),
+              }}
               component={disabled ? "div" : undefined} // required to avoid error message about passing a disabled button to tooltip
               // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
               // onClick will cause users to lose focus on selection
@@ -444,9 +440,10 @@ export default function Toolbar(props) {
         <span>
           <IconButton
             aria-label="link"
-            className={clsx(classes.margin, {
-              [classes.active]: isLinkActive(editor),
-            })}
+            sx={{
+              ...buttonMarginLeft,
+              ...(isBlockActive(editor, "Link") ? activeStyle : {}),
+            }}
             disabled={disabled}
             onMouseDown={() => setOpenLinkEditor(true)}
             size="large"
@@ -460,21 +457,24 @@ export default function Toolbar(props) {
         <span>
           <IconButton
             aria-label="image"
-            className={clsx(classes.margin, {
-              [classes.active]: isImageNodeAtSelection(
-                editor,
-                editor.selection
-              ),
-            })}
+            sx={{
+              ...buttonMarginLeft,
+              ...(isBlockActive(editor, "Image") ? activeStyle : {}),
+            }}
             disabled={disabled}
-            onMouseDown={() => toggleImageAtSelection(editor)}
+            onMouseDown={() => {
+              if (!isBlockActive(editor, "Image")) {
+                insertImage(editor, "https://via.placeholder.com/150");
+              }
+              setOpenImageEditor(editor);
+            }}
             size="large"
           >
             <Image />
           </IconButton>
         </span>
       </Tooltip>
-    </Root>
+    </Box>
   );
 }
 
@@ -482,10 +482,12 @@ Toolbar.defaultProps = {
   selection: undefined,
   disabled: true,
   setOpenLinkEditor: () => {},
+  setOpenImageEditor: () => {},
 };
 
 Toolbar.propTypes = {
   selection: PropTypes.object,
   disabled: PropTypes.bool,
   setOpenLinkEditor: PropTypes.func,
+  setOpenImageEditor: PropTypes.func,
 };
