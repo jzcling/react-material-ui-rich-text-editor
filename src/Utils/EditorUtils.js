@@ -307,9 +307,9 @@ export const serialize = (node) => {
     case "Paragraph":
       return `<p>${children}</p>`;
     case "Quote Block":
-      return `<blockquote>${children}</blockquote>`;
+      return `<blockquote class="editor-quote-block">${children}</blockquote>`;
     case "Code Block":
-      return `<pre style="background-color: #eee;border: 1px solid #999;border-radius: 4px;display: block;padding: 8px 16px;">${children}</pre>`;
+      return `<pre class="editor-code-block">${children}</pre>`;
     case "Ordered List":
       return `<ol>${children}</ol>`;
     case "Unordered List":
@@ -321,14 +321,14 @@ export const serialize = (node) => {
     case "Image":
       return `<figure 
         content-editable="false" 
-        style="display: flex;flex-direction: column;justify-content: center;align-items: center;"
+        class="editor-image-container"
       >
         <img 
           src="${escapeHtml(node.url)}" 
           alt="${escapeHtml(node.caption)}" 
           width="${node.width}" 
           height="${node.height}" 
-          style="max-width: 100%; max-height: 20em; object-fit: contain"
+          class="editor-image"
         />
         <figcaption>${escapeHtml(node.caption)}</figcaption>
         ${children}

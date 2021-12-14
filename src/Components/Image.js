@@ -6,12 +6,7 @@ export default function Image(props) {
   return (
     <figure
       contentEditable={false}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      className="editor-image-container"
       {...attributes}
     >
       <img
@@ -19,11 +14,7 @@ export default function Image(props) {
         alt={element.caption}
         width={element.width}
         height={element.height}
-        style={{
-          maxWidth: "100%",
-          maxHeight: "20em",
-          objectFit: "contain",
-        }}
+        className="editor-image"
       />
       {element.caption && <figcaption>{element.caption}</figcaption>}
       {children}

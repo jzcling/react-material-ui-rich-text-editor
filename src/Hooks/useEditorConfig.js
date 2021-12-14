@@ -31,7 +31,11 @@ function renderElement({ element, children, attributes }) {
     case "Paragraph":
       return <p {...attributes}>{children}</p>;
     case "Quote Block":
-      return <blockquote {...attributes}>{children}</blockquote>;
+      return (
+        <blockquote className="editor-quote-block" {...attributes}>
+          {children}
+        </blockquote>
+      );
     case "Code Block":
       return <CodeBlock {...{ element, children, attributes }} />;
     case "Ordered List":
@@ -117,6 +121,7 @@ function renderLeaf({ leaf, children, attributes }) {
       ? leaf.fontSize
       : String(leaf.fontSize) + "px";
   }
+
   if (leaf.color) {
     style.color = leaf.color;
   }

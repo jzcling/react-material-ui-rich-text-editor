@@ -1,0 +1,27 @@
+.editor-code-block {
+  background-color: #eee;
+  border: 1px solid #999;
+  border-radius: 4px;
+  display: block;
+  padding: 8px 16px;
+}
+
+.editor-quote-block {
+  border-left: 2px solid #ddd;
+  margin: 0 16px;
+  padding-left: 16px;
+  font-style: italic;
+}
+
+.editor-image-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.editor-image {
+  max-width: 100%;
+  max-height: 20em;
+  object-fit: contain;
+}
