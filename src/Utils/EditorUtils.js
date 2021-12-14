@@ -236,6 +236,14 @@ export function insertImage(editor, url) {
     children: [text],
   };
   Transforms.insertNodes(editor, image);
+
+  // if at end of editor, add a paragraph
+  if (!Editor.after(editor, editor.selection, { unit: "character" })) {
+    Transforms.insertNodes(editor, {
+      type: "Paragraph",
+      children: [{ text: "" }],
+    });
+  }
 }
 
 export function removeImage(editor) {
