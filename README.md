@@ -1,6 +1,6 @@
 # React Material UI Rich Text Editor
 
-A WYSIWYG rich text editor built with Slate using Material UI components. This project is heavily influenced by the examples provided in the [Slate documentation](https://www.slatejs.org/examples).
+A WYSIWYG rich text editor built with Slate using Material UI components. This project is heavily influenced by the examples provided in the [Slate documentation](https://www.slatejs.org/examples) and this article on [Smashing Magazine](https://www.smashingmagazine.com/2021/05/building-wysiwyg-editor-javascript-slatejs).
 
 ## Installation
 
