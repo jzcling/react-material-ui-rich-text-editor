@@ -8,6 +8,12 @@ import analyze from "rollup-plugin-analyzer";
 import pkg from "./package.json";
 import { sizeSnapshot } from "rollup-plugin-size-snapshot";
 import autoExternal from "rollup-plugin-auto-external";
+import postcss from "rollup-plugin-postcss";
+import simplevars from "postcss-simple-vars";
+import nested from "postcss-nested";
+import cssnext from "postcss-cssnext";
+import cssnano from "cssnano";
+import path from "path";
 
 const config = [
   {
@@ -29,6 +35,16 @@ const config = [
     plugins: [
       replace({
         "process.env.NODE_ENV": JSON.stringify("production"),
+      }),
+      postcss({
+        plugins: [
+          simplevars(),
+          nested(),
+          cssnext({ warnForDuplicates: false }),
+          cssnano(),
+        ],
+        extensions: [".css"],
+        extract: path.resolve("dist/editor.css"),
       }),
       json(),
       resolve(),
@@ -86,6 +102,15 @@ const config = [
     plugins: [
       replace({
         "process.env.NODE_ENV": JSON.stringify("production"),
+      }),
+      postcss({
+        plugins: [
+          simplevars(),
+          nested(),
+          cssnext({ warnForDuplicates: false }),
+          cssnano(),
+        ],
+        extensions: [".css"],
       }),
       json(),
       resolve(),
