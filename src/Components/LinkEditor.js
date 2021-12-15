@@ -11,9 +11,11 @@ import React, { useState } from "react";
 import { Editor, Element } from "slate";
 import PropTypes from "prop-types";
 import { removeLink, setLink } from "../Utils/EditorUtils";
+import { useSlateStatic } from "slate-react";
 
 export default function LinkEditor(props) {
-  const { open, handleClose, editor } = props;
+  const { open, handleClose } = props;
+  const editor = useSlateStatic();
 
   const [error, setError] = useState();
 

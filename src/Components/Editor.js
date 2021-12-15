@@ -96,18 +96,17 @@ export default function Editor(props) {
             renderLeaf={renderLeaf}
             onKeyDown={onKeyDown}
             spellCheck
+            onBlur={(e) => e.preventDefault()} // This prevents selection from losing highlight when clicking on toolbar buttons
             {...editableProps}
           />
 
           <LinkEditor
             open={openLinkEditor && focus}
             handleClose={() => setOpenLinkEditor(false)}
-            editor={editor}
           />
           <ImageEditor
             open={openImageEditor && focus}
             handleClose={() => setOpenImageEditor(false)}
-            editor={editor}
           />
         </Paper>
       </ClickAwayListener>

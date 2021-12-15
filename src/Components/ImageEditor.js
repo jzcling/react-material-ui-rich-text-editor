@@ -11,9 +11,11 @@ import React from "react";
 import { Editor, Element, Transforms } from "slate";
 import PropTypes from "prop-types";
 import { removeImage } from "../Utils/EditorUtils";
+import { useSlateStatic } from "slate-react";
 
 export default function ImageEditor(props) {
-  const { open, handleClose, editor } = props;
+  const { open, handleClose } = props;
+  const editor = useSlateStatic();
 
   const [location] = Editor.nodes(editor, {
     match: (n) =>
