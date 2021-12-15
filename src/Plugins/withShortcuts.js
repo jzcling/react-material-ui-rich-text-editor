@@ -1,5 +1,4 @@
-import { Editor, Element, Range, Transforms } from "slate";
-import { toggleBlock, toggleMark } from "../Utils/EditorUtils";
+import { Editor, Range, Transforms } from "slate";
 
 const ELEMENT_SHORTCUTS = {
   "*": { style: "Unordered List", type: "List Item" },
