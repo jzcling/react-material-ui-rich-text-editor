@@ -64,7 +64,7 @@ const groupedButtonStyle = {
   borderRadius: "50%",
 };
 
-const CHARACTER_STYLES = [
+const TEXT_STYLE_TYPES = [
   {
     style: "bold",
     label: "Bold",
@@ -104,28 +104,28 @@ const CHARACTER_STYLES = [
 
 const GROUP_TYPES = [
   {
-    style: "Ordered List",
-    type: "List Item",
+    parent: "Ordered List",
+    child: "List Item",
     icon: <FormatListNumbered />,
   },
   {
-    style: "Unordered List",
-    type: "List Item",
+    parent: "Unordered List",
+    child: "List Item",
     icon: <FormatListBulleted />,
   },
   {
-    style: "Quote Block",
-    type: "Quote",
+    parent: "Quote Block",
+    child: "Quote",
     icon: <FormatQuote />,
   },
   {
-    style: "Code Block",
-    type: "Code",
+    parent: "Code Block",
+    child: "Code",
     icon: <Code />,
   },
 ];
 
-const TEXT_ALIGN_TYPES = [
+const ALIGNMENT_TYPES = [
   {
     style: "Align Left",
     icon: <FormatAlignLeft />,
@@ -165,26 +165,26 @@ export default function Toolbar(props) {
 
   const [alignAnchorEl, setAlignAnchorEl] = useState();
   const activeTextAlign =
-    TEXT_ALIGN_TYPES.find(
+    ALIGNMENT_TYPES.find(
       (t) =>
         t.style ===
         getActiveBlock(
           editor,
-          TEXT_ALIGN_TYPES.map((t) => t.style)
+          ALIGNMENT_TYPES.map((t) => t.style)
         )
-    ) || TEXT_ALIGN_TYPES[0];
+    ) || ALIGNMENT_TYPES[0];
 
   const activeGroup =
     GROUP_TYPES.find(
       (t) =>
-        t.style ===
+        t.parent ===
         getActiveBlock(
           editor,
-          GROUP_TYPES.map((t) => t.style)
+          GROUP_TYPES.map((t) => t.parent)
         )
     ) || {};
 
-  const handleCharacterStyleChange = useCallback(
+  const handleTextStyleChange = useCallback(
     (style) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
@@ -347,24 +347,22 @@ export default function Toolbar(props) {
         <CompactPicker onChangeComplete={handleFontColorChange} />
       </Popover>
 
-      {CHARACTER_STYLES.map((style) => (
-        <Tooltip title={style.label} key={style.style}>
+      {TEXT_STYLE_TYPES.map((type) => (
+        <Tooltip title={type.label} key={type.style}>
           <span>
             <IconButton
-              aria-label={style.label}
+              aria-label={type.label}
               sx={{
                 ...buttonMarginLeft,
-                ...(getActiveStyles(editor).has(style.style)
-                  ? activeStyle
-                  : {}),
+                ...(getActiveStyles(editor).has(type.style) ? activeStyle : {}),
               }}
               disabled={disabled}
               // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
               // onClick will cause users to lose focus on selection
-              onMouseDown={handleCharacterStyleChange(style.style)}
+              onMouseDown={handleTextStyleChange(type.style)}
               size="large"
             >
-              {style.icon}
+              {type.icon}
             </IconButton>
           </span>
         </Tooltip>
@@ -396,7 +394,7 @@ export default function Toolbar(props) {
           horizontal: "left",
         }}
       >
-        {TEXT_ALIGN_TYPES.map((type) => {
+        {ALIGNMENT_TYPES.map((type) => {
           if (["Multiple"].includes(type.style)) {
             return null;
           }
@@ -414,19 +412,19 @@ export default function Toolbar(props) {
 
       <ButtonGroup aria-label="group types" disabled={disabled}>
         {GROUP_TYPES.map((type) => (
-          <Tooltip title={type.style} key={type.style}>
+          <Tooltip title={type.parent} key={type.parent}>
             <Button
-              key={type.style}
-              aria-label={type.style}
+              key={type.parent}
+              aria-label={type.parent}
               sx={{
                 ...buttonMarginLeft,
                 ...groupedButtonStyle,
-                ...(activeGroup.style === type.style ? activeStyle : {}),
+                ...(activeGroup.style === type.parent ? activeStyle : {}),
               }}
               component={disabled ? "div" : undefined} // required to avoid error message about passing a disabled button to tooltip
               // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
               // onClick will cause users to lose focus on selection
-              onMouseDown={handleGroupTypeChange(type.style, type.type)}
+              onMouseDown={handleGroupTypeChange(type.parent, type.child)}
             >
               {type.icon}
             </Button>
