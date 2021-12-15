@@ -14,7 +14,8 @@ import LinkEditor from "./LinkEditor";
 import { ClickAwayListener, debounce, Paper } from "@mui/material";
 import ImageEditor from "./ImageEditor";
 import { withHistory } from "slate-history";
-import { withHtml } from "../Utils/PasteUtils";
+import { withHtml } from "../Plugins/withHtml";
+import { withShortcuts } from "../Plugins/withShortcuts";
 
 const initialValue = [
   {
@@ -28,7 +29,9 @@ export default function Editor(props) {
 
   const editorRef = useRef();
   if (!editorRef.current)
-    editorRef.current = withHtml(withReact(withHistory(createEditor())));
+    editorRef.current = withShortcuts(
+      withHtml(withReact(withHistory(createEditor())))
+    );
   const editor = editorRef.current;
 
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
