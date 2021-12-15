@@ -2,6 +2,8 @@ import React, { useCallback } from "react";
 import { DefaultElement } from "slate-react";
 import isHotkey from "is-hotkey";
 import {
+  DEFAULT_FONT_COLOR,
+  DEFAULT_FONT_SIZE,
   getActiveBlock,
   GROUP_TYPES,
   toggleBlock,
@@ -112,8 +114,8 @@ function renderLeaf({ leaf, children, attributes }) {
   }
 
   const style = {
-    fontSize: "16px",
-    color: "#181d23",
+    fontSize: DEFAULT_FONT_SIZE,
+    color: DEFAULT_FONT_COLOR,
   };
 
   if (leaf.fontSize) {

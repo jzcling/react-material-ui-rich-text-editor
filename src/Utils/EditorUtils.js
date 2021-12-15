@@ -16,6 +16,9 @@ export const ALIGNMENT_TYPES = [
   "Justify",
 ];
 
+export const DEFAULT_FONT_SIZE = "16px";
+export const DEFAULT_FONT_COLOR = "#181d23";
+
 export const toggleBlock = (editor, format, itemType) => {
   const isActive = isBlockActive(editor, format);
   const isGroup = GROUP_TYPES.includes(format);
@@ -104,17 +107,17 @@ export const getActiveStyles = (editor) => {
 export const getActiveFontSize = (editor) => {
   const marks = Editor.marks(editor);
   if (marks) {
-    return marks.fontSize || 16;
+    return marks.fontSize || DEFAULT_FONT_SIZE;
   }
-  return 16;
+  return DEFAULT_FONT_SIZE;
 };
 
 export const getActiveFontColor = (editor) => {
   const marks = Editor.marks(editor);
   if (marks) {
-    return marks.color || "#181d23";
+    return marks.color || DEFAULT_FONT_COLOR;
   }
-  return "#181d23";
+  return DEFAULT_FONT_COLOR;
 };
 
 export function setLink(editor, url) {
@@ -283,8 +286,8 @@ export const serialize = (node) => {
       string = `<mark>${string}</mark>`;
     }
     const style = {
-      "font-size": "16px",
-      color: "#181d23",
+      "font-size": DEFAULT_FONT_SIZE,
+      color: DEFAULT_FONT_COLOR,
     };
     if (node.fontSize) {
       style["font-size"] = String(node.fontSize).endsWith("px")
