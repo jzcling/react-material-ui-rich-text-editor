@@ -344,7 +344,10 @@ export default function Toolbar(props) {
           horizontal: "left",
         }}
       >
-        <CompactPicker onChangeComplete={handleFontColorChange} />
+        <CompactPicker
+          color={fontColor}
+          onChangeComplete={handleFontColorChange}
+        />
       </Popover>
 
       {TEXT_STYLE_TYPES.map((type) => (
