@@ -1,4 +1,4 @@
 import Editor from "./Components/Editor";
-import "./index.css";
+import "./index.scss";
 
 export { Editor };

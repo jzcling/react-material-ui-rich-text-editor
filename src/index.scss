@@ -25,3 +25,16 @@
   max-height: 20em;
   object-fit: contain;
 }
+
+.compact-picker {
+  width: 300px !important;
+  div {
+    span {
+      div {
+        height: 20px !important;
+        width: 20px !important;
+        border-radius: 4px;
+      }
+    }
+  }
+}
