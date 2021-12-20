@@ -16,7 +16,7 @@ export const ALIGNMENT_TYPES = [
   "Justify",
 ];
 
-export const DEFAULT_FONT_SIZE = "16px";
+export const DEFAULT_FONT_SIZE = 16;
 export const DEFAULT_FONT_COLOR = "#181d23";
 
 export const toggleBlock = (editor, format, itemType) => {
@@ -392,7 +392,7 @@ const ELEMENT_TAGS = {
         case "center":
           return { type: "Align Center" };
         case "right":
-          return { type: "Align Left" };
+          return { type: "Align Right" };
         case "justify":
           return { type: "Justify" };
         default:
@@ -419,7 +419,18 @@ const TEXT_TAGS = {
   H4: () => ({ fontSize: 16, bold: true }),
   H5: () => ({ fontSize: 13, bold: true }),
   H6: () => ({ fontSize: 11, bold: true }),
-  DIV: (el) => el.textContent,
+  DIV: (el) => ({
+    fontSize: el.style?.fontSize
+      ? el.style?.fontSize.replace("px", "")
+      : DEFAULT_FONT_SIZE,
+    color: el.style?.color || DEFAULT_FONT_COLOR,
+  }),
+  SPAN: (el) => ({
+    fontSize: el.style?.fontSize
+      ? el.style?.fontSize.replace("px", "")
+      : DEFAULT_FONT_SIZE,
+    color: el.style?.color || DEFAULT_FONT_COLOR,
+  }),
 };
 
 export const deserialize = (el) => {
