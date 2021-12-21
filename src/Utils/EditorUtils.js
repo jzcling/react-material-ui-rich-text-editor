@@ -405,7 +405,7 @@ const ELEMENT_TAGS = {
 // COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
 const TEXT_TAGS = {
   CODE: () => ({ code: true }),
-  Quote: () => ({ quote: true }),
+  QUOTE: () => ({ quote: true }),
   STRONG: () => ({ bold: true }),
   EM: () => ({ italic: true }),
   I: () => ({ italic: true }),
