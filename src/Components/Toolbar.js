@@ -149,7 +149,7 @@ const ALIGNMENT_TYPES = [
 ];
 
 export default function Toolbar(props) {
-  const { disabled, setOpenLinkEditor, setOpenImageEditor } = props;
+  const { selection, disabled, setOpenLinkEditor, setOpenImageEditor } = props;
   const editor = useSlateStatic();
   var [fontSize, setFontSize] = useState();
   var [fontColor, setFontColor] = useState();
@@ -157,11 +157,11 @@ export default function Toolbar(props) {
 
   useEffect(() => {
     setFontSize(getActiveFontSize(editor));
-  }, [editor]);
+  }, [editor, selection]);
 
   useEffect(() => {
     setFontColor(getActiveFontColor(editor));
-  }, [editor]);
+  }, [editor, selection]);
 
   const [alignAnchorEl, setAlignAnchorEl] = useState();
   const activeTextAlign =
@@ -188,10 +188,13 @@ export default function Toolbar(props) {
     (style) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
-        });
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleMark(editor, style);
       // ReactEditor.focus(editor);
@@ -203,10 +206,13 @@ export default function Toolbar(props) {
     (align) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
-        });
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       setAlignAnchorEl(undefined);
       toggleBlock(editor, align);
@@ -219,10 +225,13 @@ export default function Toolbar(props) {
     (style, type) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
-        });
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleBlock(editor, style, type);
       // ReactEditor.focus(editor);
@@ -234,10 +243,13 @@ export default function Toolbar(props) {
     (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
-        });
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
       }
       toggleMark(editor, "fontSize", event.target.value);
       setFontSize(event.target.value);
@@ -248,10 +260,14 @@ export default function Toolbar(props) {
   const handleFontColorChange = useCallback(
     (color) => {
       if (!editor.selection) {
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
-        });
+        Transforms.select(
+          editor,
+          selection || {
+            anchor: Editor.start(editor, []),
+            focus: Editor.end(editor, []),
+          }
+        );
+      }
       }
       toggleMark(editor, "color", color.hex);
       setFontColor(color.hex);
