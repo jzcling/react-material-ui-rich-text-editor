@@ -1,11 +1,12 @@
 import { Editor, Range, Transforms } from "slate";
 
 const ELEMENT_SHORTCUTS = {
-  "*": { style: "Unordered List", type: "List Item" },
-  "-": { style: "Unordered List", type: "List Item" },
-  "+": { style: "Unordered List", type: "List Item" },
-  "1.": { style: "Ordered List", type: "List Item" },
-  ">": { style: "Quote Block", type: "Quote" },
+  "*": { parent: "Unordered List", child: "List Item" },
+  "-": { parent: "Unordered List", child: "List Item" },
+  "+": { parent: "Unordered List", child: "List Item" },
+  "1.": { parent: "Ordered List", child: "List Item" },
+  ">": { parent: "Quote Block", child: "Quote" },
+  "```": { parent: "Code Block", child: "Code" },
 };
 
 const TEXT_SHORTCUTS = {
@@ -32,6 +33,7 @@ export const withShortcuts = (editor) => {
       const start = Editor.start(editor, path);
       const range = { anchor, focus: start };
       const beforeText = Editor.string(editor, range);
+
       const elementProps = ELEMENT_SHORTCUTS[beforeText];
       const textProps = TEXT_SHORTCUTS[beforeText];
 
@@ -41,11 +43,11 @@ export const withShortcuts = (editor) => {
 
         if (elementProps) {
           const newProperties = {
-            type: elementProps.type,
+            type: elementProps.child,
           };
           Transforms.setNodes(editor, newProperties);
 
-          const block = { type: elementProps.style, children: [] };
+          const block = { type: elementProps.parent, children: [] };
           Transforms.wrapNodes(editor, block);
         }
 
