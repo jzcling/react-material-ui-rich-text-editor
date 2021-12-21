@@ -149,7 +149,7 @@ const ALIGNMENT_TYPES = [
 ];
 
 export default function Toolbar(props) {
-  const { selection, disabled, setOpenLinkEditor, setOpenImageEditor } = props;
+  const { disabled, setOpenLinkEditor, setOpenImageEditor } = props;
   const editor = useSlateStatic();
   var [fontSize, setFontSize] = useState();
   var [fontColor, setFontColor] = useState();
@@ -157,11 +157,11 @@ export default function Toolbar(props) {
 
   useEffect(() => {
     setFontSize(getActiveFontSize(editor));
-  }, [editor, selection]);
+  }, [editor]);
 
   useEffect(() => {
     setFontColor(getActiveFontColor(editor));
-  }, [editor, selection]);
+  }, [editor]);
 
   const [alignAnchorEl, setAlignAnchorEl] = useState();
   const activeTextAlign =
@@ -188,91 +188,76 @@ export default function Toolbar(props) {
     (style) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
       }
       toggleMark(editor, style);
-      ReactEditor.focus(editor);
+      // ReactEditor.focus(editor);
     },
-    [editor, selection]
+    [editor]
   );
 
   const handleTextAlignChange = useCallback(
     (align) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
       }
       setAlignAnchorEl(undefined);
       toggleBlock(editor, align);
-      ReactEditor.focus(editor);
+      // ReactEditor.focus(editor);
     },
-    [editor, selection]
+    [editor]
   );
 
   const handleGroupTypeChange = useCallback(
     (style, type) => (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
       }
       toggleBlock(editor, style, type);
-      ReactEditor.focus(editor);
+      // ReactEditor.focus(editor);
     },
-    [editor, selection]
+    [editor]
   );
 
   const handleFontSizeChange = useCallback(
     (event) => {
       event.preventDefault();
       if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
       }
       toggleMark(editor, "fontSize", event.target.value);
       setFontSize(event.target.value);
     },
-    [editor, selection]
+    [editor]
   );
 
   const handleFontColorChange = useCallback(
     (color) => {
       if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
       }
       toggleMark(editor, "color", color.hex);
       setFontColor(color.hex);
       closeColorPicker();
     },
-    [editor, selection]
+    [editor]
   );
 
   const openColorPicker = (event) => {
@@ -480,14 +465,12 @@ export default function Toolbar(props) {
 }
 
 Toolbar.defaultProps = {
-  selection: undefined,
   disabled: true,
   setOpenLinkEditor: () => {},
   setOpenImageEditor: () => {},
 };
 
 Toolbar.propTypes = {
-  selection: PropTypes.object,
   disabled: PropTypes.bool,
   setOpenLinkEditor: PropTypes.func,
   setOpenImageEditor: PropTypes.func,

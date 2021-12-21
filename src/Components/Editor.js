@@ -3,7 +3,6 @@ import { createEditor } from "slate";
 import React, { useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
-import useSelection from "../Hooks/useSelection";
 import Toolbar from "./Toolbar";
 import {
   deserialize,
@@ -36,8 +35,6 @@ export default function Editor(props) {
 
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
 
-  const [previousSelection, selection, setSelection] = useSelection(editor);
-
   const [openLinkEditor, setOpenLinkEditor] = useState(false);
   const [openImageEditor, setOpenImageEditor] = useState(false);
 
@@ -61,7 +58,6 @@ export default function Editor(props) {
   const handleChange = (value) => {
     setValue(value);
     debouncedUpdateHtml(editor);
-    setSelection(editor.selection);
     identifyLinksInTextIfAny(editor);
   };
 
@@ -86,7 +82,6 @@ export default function Editor(props) {
           {...containerProps}
         >
           <Toolbar
-            selection={selection || previousSelection}
             disabled={!focus}
             setOpenLinkEditor={setOpenLinkEditor}
             setOpenImageEditor={setOpenImageEditor}
