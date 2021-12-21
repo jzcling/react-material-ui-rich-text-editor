@@ -27,7 +27,6 @@ import {
 import { ReactEditor, useSlateStatic } from "slate-react";
 import { Editor, Transforms } from "slate";
 import isHotkey from "is-hotkey";
-import { CompactPicker } from "react-color";
 import {
   BorderColor,
   Code,
@@ -46,6 +45,7 @@ import {
   Link,
   StrikethroughS,
 } from "@mui/icons-material";
+import ColorPicker from "./ColorPicker/ColorPicker";
 
 const activeStyle = {
   backgroundColor: (theme) => theme.palette.primary.light,
@@ -258,7 +258,7 @@ export default function Toolbar(props) {
   );
 
   const handleFontColorChange = useCallback(
-    (color) => {
+    (color, keepOpen = false) => {
       if (!editor.selection) {
         Transforms.select(
           editor,
@@ -268,10 +268,11 @@ export default function Toolbar(props) {
           }
         );
       }
+      toggleMark(editor, "color", color);
+      setFontColor(color);
+      if (!keepOpen) {
+        closeColorPicker();
       }
-      toggleMark(editor, "color", color.hex);
-      setFontColor(color.hex);
-      closeColorPicker();
     },
     [editor]
   );
@@ -345,10 +346,7 @@ export default function Toolbar(props) {
           horizontal: "left",
         }}
       >
-        <CompactPicker
-          color={fontColor}
-          onChangeComplete={handleFontColorChange}
-        />
+        <ColorPicker color={fontColor} onChange={handleFontColorChange} />
       </Popover>
 
       {TEXT_STYLE_TYPES.map((type) => (

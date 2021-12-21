@@ -16,7 +16,6 @@ The following packages are peer dependencies and must be installed in your proje
 @mui/icons-material
 @mui/material
 lodash
-react-color
 ```
 
 ## Usage Example
