@@ -1,6 +1,6 @@
 import { Editable, Slate, withReact } from "slate-react";
 import { createEditor } from "slate";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import useEditorConfig from "../Hooks/useEditorConfig";
 import useSelection from "../Hooks/useSelection";
@@ -24,6 +24,12 @@ const initialValue = [
   },
 ];
 
+function getValue(html) {
+  if (!html) return initialValue;
+  const parsed = new DOMParser().parseFromString(html, "text/html");
+  return deserialize(parsed.body);
+}
+
 export default function Editor(props) {
   const { html, updateHtml, containerProps, editableProps } = props;
 
@@ -42,11 +48,13 @@ export default function Editor(props) {
 
   const [focus, setFocus] = useState(false);
 
-  const [value, setValue] = useState(() => {
-    if (!html) return initialValue;
-    const parsed = new DOMParser().parseFromString(html, "text/html");
-    return deserialize(parsed.body);
-  });
+  const [value, setValue] = useState(() => getValue(html));
+
+  useEffect(() => {
+    const value = getValue(html);
+    editor.children = value;
+    setValue(value);
+  }, [html]);
 
   const debouncedUpdateHtml = useMemo(
     () =>
