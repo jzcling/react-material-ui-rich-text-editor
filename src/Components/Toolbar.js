@@ -45,7 +45,7 @@ import {
   Link,
   StrikethroughS,
 } from "@mui/icons-material";
-import { ColorPicker, ColorPickerVariant } from "react-mui-color";
+import { ColorPicker } from "react-mui-color";
 
 const activeStyle = {
   backgroundColor: (theme) => theme.palette.primary.light,
@@ -349,7 +349,7 @@ export default function Toolbar(props) {
         <ColorPicker
           color={fontColor}
           onChange={handleFontColorChange}
-          variant={ColorPickerVariant.Predefined}
+          variant={"predefined"}
         />
       </Popover>
 
