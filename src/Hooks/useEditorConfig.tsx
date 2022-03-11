@@ -1,26 +1,23 @@
-import React, { useCallback } from "react";
-import { DefaultElement } from "slate-react";
 import isHotkey from "is-hotkey";
-import {
-  DEFAULT_FONT_COLOR,
-  DEFAULT_FONT_SIZE,
-  getActiveBlock,
-  GROUP_TYPES,
-  toggleBlock,
-  toggleMark,
-} from "../Utils/EditorUtils";
-import { Editor } from "slate";
-import Image from "../Components/Image";
-import CodeBlock from "../Components/CodeBlock";
+import React, { useCallback } from "react";
+import { BaseText, Editor } from "slate";
+import { DefaultElement, RenderElementProps, RenderLeafProps } from "slate-react";
 
-export default function useEditorConfig(editor) {
+import CodeBlock from "../components/CodeBlock";
+import Image from "../components/Image";
+import { TextStyleType } from "../components/Toolbar";
+import {
+  DEFAULT_FONT_COLOR, DEFAULT_FONT_SIZE, getActiveBlock, GROUP_TYPES, toggleBlock, toggleMark
+} from "../utils/EditorUtils";
+
+export default function useEditorConfig(editor: Editor) {
   const { isVoid, isInline } = editor;
   editor.isVoid = (element) =>
     ["Image"].includes(element.type) || isVoid(element);
   editor.isInline = (element) =>
     ["Link"].includes(element.type) || isInline(element);
 
-  const onKeyDown = useCallback(
+  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = useCallback(
     (event) => handleKeyDown(editor, event),
     [editor]
   );
@@ -28,51 +25,79 @@ export default function useEditorConfig(editor) {
   return { renderElement, renderLeaf, onKeyDown };
 }
 
-function renderElement({ element, children, attributes }) {
+const ElementType = {
+  Paragraph: "Paragraph",
+  QuoteBlock: "Quote Block",
+  CodeBlock: "Code Block",
+  OrderedList: "Ordered List",
+  UnorderedList: "Unordered List",
+  ListItem: "List Item",
+  Link: "Link",
+  Image: "Image",
+  AlignLeft: "Align Left",
+  AlignRight: "Align Right",
+  AlignCenter: "Align Center",
+  Justify: "Justify",
+  Multiple: "Multiple",
+} as const;
+export type ElementType = typeof ElementType[keyof typeof ElementType];
+
+export type CustomElement = {
+  type: ElementType;
+  children?: CustomText[];
+  url?: string;
+  caption?: string;
+  width?: string | number;
+  height?: string | number;
+  style?: Record<string, any>;
+};
+export type CustomText = Partial<BaseText> & Partial<TextStyleType>;
+
+function renderElement({ element, children, attributes }: RenderElementProps) {
   switch (element.type) {
-    case "Paragraph":
+    case ElementType.Paragraph:
       return <p {...attributes}>{children}</p>;
-    case "Quote Block":
+    case ElementType.QuoteBlock:
       return (
         <blockquote className="editor-quote-block" {...attributes}>
           {children}
         </blockquote>
       );
-    case "Code Block":
+    case ElementType.CodeBlock:
       return <CodeBlock {...{ element, children, attributes }} />;
-    case "Ordered List":
+    case ElementType.OrderedList:
       return <ol {...attributes}>{children}</ol>;
-    case "Unordered List":
+    case ElementType.UnorderedList:
       return <ul {...attributes}>{children}</ul>;
-    case "List Item":
+    case ElementType.ListItem:
       return <li {...attributes}>{children}</li>;
-    case "Link":
+    case ElementType.Link:
       return (
         <a {...attributes} href={element.url}>
           {children}
         </a>
       );
-    case "Image":
+    case ElementType.Image:
       return <Image {...{ element, children, attributes }} />;
-    case "Align Left":
+    case ElementType.AlignLeft:
       return (
         <div style={{ textAlign: "left" }} {...attributes}>
           {children}
         </div>
       );
-    case "Align Center":
+    case ElementType.AlignCenter:
       return (
         <div style={{ textAlign: "center" }} {...attributes}>
           {children}
         </div>
       );
-    case "Align Right":
+    case ElementType.AlignRight:
       return (
         <div style={{ textAlign: "right" }} {...attributes}>
           {children}
         </div>
       );
-    case "Justify":
+    case ElementType.Justify:
       return (
         <div style={{ textAlign: "justify" }} {...attributes}>
           {children}
@@ -84,7 +109,7 @@ function renderElement({ element, children, attributes }) {
   }
 }
 
-function renderLeaf({ leaf, children, attributes }) {
+function renderLeaf({ leaf, children, attributes }: RenderLeafProps) {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -113,7 +138,7 @@ function renderLeaf({ leaf, children, attributes }) {
     children = <q>{children}</q>;
   }
 
-  const style = {
+  const style: { fontSize: string | number; color: string } = {
     fontSize: DEFAULT_FONT_SIZE,
     color: DEFAULT_FONT_COLOR,
   };
@@ -135,7 +160,10 @@ function renderLeaf({ leaf, children, attributes }) {
   );
 }
 
-function handleKeyDown(editor, event) {
+function handleKeyDown(
+  editor: Editor,
+  event: React.KeyboardEvent<HTMLDivElement>
+) {
   if (isHotkey("mod+b", { byKey: true }, event)) {
     toggleMark(editor, "bold");
     return;
@@ -161,7 +189,7 @@ function handleKeyDown(editor, event) {
     return;
   }
   if (isHotkey("backspace", { byKey: true }, event)) {
-    if (Editor.before(editor, editor.selection)) {
+    if (editor.selection && Editor.before(editor, editor.selection)) {
       return;
     }
     const type = getActiveBlock(editor, GROUP_TYPES);

@@ -1,15 +1,21 @@
 import { Editor, Range, Transforms } from "slate";
 
-const ELEMENT_SHORTCUTS = {
+import { TextStyleType } from "../components/Toolbar";
+import { CustomElement, ElementType } from "../hooks/useEditorConfig";
+
+const ELEMENT_SHORTCUTS: Record<
+  string,
+  { parent: ElementType; child: ElementType | keyof TextStyleType }
+> = {
   "*": { parent: "Unordered List", child: "List Item" },
   "-": { parent: "Unordered List", child: "List Item" },
   "+": { parent: "Unordered List", child: "List Item" },
   "1.": { parent: "Ordered List", child: "List Item" },
-  ">": { parent: "Quote Block", child: "Quote" },
-  "```": { parent: "Code Block", child: "Code" },
+  ">": { parent: "Quote Block", child: "quote" },
+  "```": { parent: "Code Block", child: "code" },
 };
 
-const TEXT_SHORTCUTS = {
+const TEXT_SHORTCUTS: Record<string, { fontSize: number; bold: boolean }> = {
   "#": { fontSize: 32, bold: true },
   "##": { fontSize: 24, bold: true },
   "###": { fontSize: 19, bold: true },
@@ -18,7 +24,7 @@ const TEXT_SHORTCUTS = {
   "######": { fontSize: 11, bold: true },
 };
 
-export const withShortcuts = (editor) => {
+export const withShortcuts = (editor: Editor) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
@@ -42,10 +48,14 @@ export const withShortcuts = (editor) => {
         Transforms.delete(editor);
 
         if (elementProps) {
-          const newProperties = {
-            type: elementProps.child,
-          };
-          Transforms.setNodes(editor, newProperties);
+          if (["quote", "code"].includes(elementProps.child)) {
+            Editor.addMark(editor, elementProps.child, true);
+          } else {
+            const newProperties: Partial<CustomElement> = {
+              type: elementProps.child,
+            };
+            Transforms.setNodes(editor, newProperties);
+          }
 
           const block = { type: elementProps.parent, children: [] };
           Transforms.wrapNodes(editor, block);

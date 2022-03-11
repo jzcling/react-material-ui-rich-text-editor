@@ -1,15 +1,20 @@
-import isUrl from "is-url";
-import { Editor, Element, Point, Range, Text, Transforms } from "slate";
 import escapeHtml from "escape-html";
+import isUrl from "is-url";
+import {
+  BasePoint, Descendant, Editor, Element, Node, Point, Range, Text, Transforms
+} from "slate";
 import { jsx } from "slate-hyperscript";
 
-export const GROUP_TYPES = [
+import { TextStyleType } from "../components/Toolbar";
+import { CustomElement, CustomText, ElementType } from "../hooks/useEditorConfig";
+
+export const GROUP_TYPES: Array<ElementType> = [
   "Ordered List",
   "Unordered List",
   "Code Block",
   "Quote Block",
 ];
-export const ALIGNMENT_TYPES = [
+export const ALIGNMENT_TYPES: Array<ElementType> = [
   "Align Left",
   "Align Center",
   "Align Right",
@@ -19,7 +24,11 @@ export const ALIGNMENT_TYPES = [
 export const DEFAULT_FONT_SIZE = 16;
 export const DEFAULT_FONT_COLOR = "#181d23";
 
-export const toggleBlock = (editor, format, itemType) => {
+export const toggleBlock = (
+  editor: Editor,
+  format: ElementType,
+  itemType?: ElementType | keyof TextStyleType
+) => {
   const isActive = isBlockActive(editor, format);
   const isGroup = GROUP_TYPES.includes(format);
   const isAlignment = ALIGNMENT_TYPES.includes(format);
@@ -47,7 +56,7 @@ export const toggleBlock = (editor, format, itemType) => {
     });
   }
   if (!isAlignment) {
-    const newProperties = {
+    const newProperties: { type: ElementType } = {
       type: isActive ? "Paragraph" : isGroup ? itemType : format,
     };
     Transforms.setNodes(editor, newProperties);
@@ -59,7 +68,11 @@ export const toggleBlock = (editor, format, itemType) => {
   }
 };
 
-export const toggleMark = (editor, format, value = true) => {
+export const toggleMark = (
+  editor: Editor,
+  format: keyof TextStyleType,
+  value: boolean = true
+) => {
   const isActive = isMarkActive(editor, format);
 
   if (isActive) {
@@ -69,7 +82,7 @@ export const toggleMark = (editor, format, value = true) => {
   }
 };
 
-export const isBlockActive = (editor, format) => {
+export const isBlockActive = (editor: Editor, format: ElementType) => {
   const { selection } = editor;
   if (!selection) return false;
 
@@ -82,12 +95,12 @@ export const isBlockActive = (editor, format) => {
   return !!match;
 };
 
-export const isMarkActive = (editor, format) => {
+export const isMarkActive = (editor: Editor, format: keyof TextStyleType) => {
   const marks = Editor.marks(editor);
   return marks ? marks[format] === true : false;
 };
 
-export const getActiveBlock = (editor, blocks) => {
+export const getActiveBlock = (editor: Editor, blocks: Array<ElementType>) => {
   var activeBlock;
   for (const block of blocks) {
     if (isBlockActive(editor, block)) {
@@ -100,11 +113,11 @@ export const getActiveBlock = (editor, blocks) => {
   return activeBlock;
 };
 
-export const getActiveStyles = (editor) => {
+export const getActiveStyles = (editor: Editor) => {
   return new Set(Object.keys(Editor.marks(editor) || {}));
 };
 
-export const getActiveFontSize = (editor) => {
+export const getActiveFontSize = (editor: Editor) => {
   const marks = Editor.marks(editor);
   if (marks) {
     return marks.fontSize || DEFAULT_FONT_SIZE;
@@ -112,7 +125,7 @@ export const getActiveFontSize = (editor) => {
   return DEFAULT_FONT_SIZE;
 };
 
-export const getActiveFontColor = (editor) => {
+export const getActiveFontColor = (editor: Editor) => {
   const marks = Editor.marks(editor);
   if (marks) {
     return marks.color || DEFAULT_FONT_COLOR;
@@ -120,13 +133,13 @@ export const getActiveFontColor = (editor) => {
   return DEFAULT_FONT_COLOR;
 };
 
-export function setLink(editor, url) {
+export function setLink(editor: Editor, url: string) {
   if (editor.selection) {
     removeLink(editor);
 
     const { selection } = editor;
     const isCollapsed = selection && Range.isCollapsed(selection);
-    const link = {
+    const link: CustomElement = {
       type: "Link",
       url,
       children: isCollapsed ? [{ text: url }] : [],
@@ -141,7 +154,7 @@ export function setLink(editor, url) {
   }
 }
 
-export function removeLink(editor) {
+export function removeLink(editor: Editor) {
   if (isBlockActive(editor, "Link")) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
@@ -150,7 +163,7 @@ export function removeLink(editor) {
   }
 }
 
-export function identifyLinksInTextIfAny(editor) {
+export function identifyLinksInTextIfAny(editor: Editor) {
   // if selection is not collapsed, we do not proceed with the link detection
   if (!editor.selection || !Range.isCollapsed(editor.selection)) {
     return;
@@ -170,7 +183,8 @@ export function identifyLinksInTextIfAny(editor) {
     return;
   }
 
-  let [start] = Range.edges(editor.selection);
+  let start: BasePoint | undefined;
+  [start] = Range.edges(editor.selection);
   const cursorPoint = start;
 
   const startPointOfLastCharacter = Editor.before(editor, editor.selection, {
@@ -223,9 +237,9 @@ export function identifyLinksInTextIfAny(editor) {
   }
 }
 
-export function insertImage(editor, url) {
+export function insertImage(editor: Editor, url: string) {
   const text = { text: "" };
-  const image = {
+  const image: CustomElement = {
     type: "Image",
     url: url,
     caption: "Image",
@@ -241,7 +255,10 @@ export function insertImage(editor, url) {
   Transforms.insertNodes(editor, image);
 
   // if at end of editor, add a paragraph
-  if (!Editor.after(editor, editor.selection, { unit: "character" })) {
+  if (
+    editor.selection &&
+    !Editor.after(editor, editor.selection, { unit: "character" })
+  ) {
     Transforms.insertNodes(editor, {
       type: "Paragraph",
       children: [{ text: "" }],
@@ -249,7 +266,7 @@ export function insertImage(editor, url) {
   }
 }
 
-export function removeImage(editor) {
+export function removeImage(editor: Editor) {
   if (isBlockActive(editor, "Image")) {
     const [location] = Editor.nodes(editor, {
       match: (n) =>
@@ -261,7 +278,7 @@ export function removeImage(editor) {
   }
 }
 
-export const serialize = (node) => {
+export const serialize = (node: Node): string => {
   if (Text.isText(node)) {
     let string = escapeHtml(node.text);
     if (node.code) {
@@ -285,7 +302,7 @@ export const serialize = (node) => {
     if (node.highlight) {
       string = `<mark>${string}</mark>`;
     }
-    const style = {
+    const style: { "font-size": string | number; color: string } = {
       "font-size": DEFAULT_FONT_SIZE,
       color: DEFAULT_FONT_COLOR,
     };
@@ -304,7 +321,9 @@ export const serialize = (node) => {
     return `<span style="${styleString}">${string}</span>`;
   }
 
-  const children = node.children.map((n) => serialize(n)).join("");
+  const children = node.children
+    ?.map((n: Descendant | CustomText) => serialize(n))
+    .join("");
 
   switch (node.type) {
     case "Paragraph":
@@ -322,15 +341,15 @@ export const serialize = (node) => {
     case "Link":
       return `<a href="${escapeHtml(node.url)}">${children}</a>`;
     case "Image":
-      return `<figure 
-        content-editable="false" 
+      return `<figure
+        content-editable="false"
         class="editor-image-container"
       >
-        <img 
-          src="${escapeHtml(node.url)}" 
-          alt="${escapeHtml(node.caption)}" 
-          width="${node.width}" 
-          height="${node.height}" 
+        <img
+          src="${escapeHtml(node.url)}"
+          alt="${escapeHtml(node.caption)}"
+          width="${node.width}"
+          height="${node.height}"
           class="editor-image"
         />
         <figcaption>${escapeHtml(node.caption)}</figcaption>
@@ -345,38 +364,46 @@ export const serialize = (node) => {
     case "Justify":
       return `<div style="text-align: justify;">${children}</div>`;
     default:
-      return children;
+      return children || "";
   }
 };
 
-const ELEMENT_TAGS = {
+const ELEMENT_TAGS: Record<
+  string,
+  (el: HTMLElement) => CustomElement | undefined
+> = {
   P: () => ({ type: "Paragraph" }),
   BLOCKQUOTE: () => ({ type: "Quote Block" }),
   PRE: () => ({ type: "Code Block" }),
   OL: () => ({ type: "Ordered List" }),
   UL: () => ({ type: "Unordered List" }),
   LI: () => ({ type: "List Item" }),
-  A: (el) => ({ type: "Link", url: el.getAttribute("href") }),
-  IMG: (el) => ({
+  A: (el: HTMLElement) => ({
+    type: "Link",
+    url: el.getAttribute("href") || undefined,
+  }),
+  IMG: (el: HTMLElement) => ({
     type: "Image",
-    url: el.getAttribute("src"),
-    caption: el.getAttribute("alt"),
-    height: el.getAttribute("height"),
-    width: el.getAttribute("width"),
+    url: el.getAttribute("src") || undefined,
+    caption: el.getAttribute("alt") || undefined,
+    height: el.getAttribute("height") || undefined,
+    width: el.getAttribute("width") || undefined,
     style: {
       maxWidth: "100%",
       maxHeight: "20em",
       objectFit: "contain",
     },
   }),
-  FIGURE: (el) => {
-    const img = [...el.childNodes].find((child) => child.nodeName === "IMG");
+  FIGURE: (el: HTMLElement) => {
+    const img = [...el.childNodes].find(
+      (child) => child.nodeName === "IMG"
+    ) as HTMLImageElement;
     return {
       type: "Image",
-      url: img.getAttribute("src"),
-      caption: img.getAttribute("alt"),
-      height: img.getAttribute("height"),
-      width: img.getAttribute("width"),
+      url: img.getAttribute("src") || undefined,
+      caption: img.getAttribute("alt") || undefined,
+      height: img.getAttribute("height") || undefined,
+      width: img.getAttribute("width") || undefined,
       style: {
         maxWidth: "100%",
         maxHeight: "20em",
@@ -384,7 +411,7 @@ const ELEMENT_TAGS = {
       },
     };
   },
-  DIV: (el) => {
+  DIV: (el: HTMLElement) => {
     if (el.style?.textAlign) {
       switch (el.style.textAlign) {
         case "left":
@@ -403,7 +430,7 @@ const ELEMENT_TAGS = {
 };
 
 // COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
-const TEXT_TAGS = {
+const TEXT_TAGS: Record<string, (el: HTMLElement) => CustomText> = {
   CODE: () => ({ code: true }),
   Q: () => ({ quote: true }),
   STRONG: () => ({ bold: true }),
@@ -419,13 +446,13 @@ const TEXT_TAGS = {
   H4: () => ({ fontSize: 16, bold: true }),
   H5: () => ({ fontSize: 13, bold: true }),
   H6: () => ({ fontSize: 11, bold: true }),
-  DIV: (el) => ({
+  DIV: (el: HTMLElement) => ({
     fontSize: el.style?.fontSize
       ? el.style?.fontSize.replace("px", "")
       : DEFAULT_FONT_SIZE,
     color: el.style?.color || DEFAULT_FONT_COLOR,
   }),
-  SPAN: (el) => ({
+  SPAN: (el: HTMLElement) => ({
     fontSize: el.style?.fontSize
       ? el.style?.fontSize.replace("px", "")
       : DEFAULT_FONT_SIZE,
@@ -433,7 +460,14 @@ const TEXT_TAGS = {
   }),
 };
 
-export const deserialize = (el) => {
+export const deserialize = (
+  el: ChildNode
+):
+  | CustomElement
+  | (string | Descendant | null)[]
+  | CustomText
+  | string
+  | null => {
   if (el.nodeType === 3) {
     return el.textContent;
   } else if (el.nodeType !== 1) {
@@ -448,7 +482,7 @@ export const deserialize = (el) => {
   if (nodeName === "FIGURE") {
     const img = [...el.childNodes].find((child) => child.nodeName === "IMG");
     if (img) {
-      parent = img;
+      parent = img as HTMLImageElement;
     }
   }
 
@@ -463,14 +497,14 @@ export const deserialize = (el) => {
   }
 
   if (ELEMENT_TAGS[nodeName]) {
-    const attrs = ELEMENT_TAGS[nodeName](el);
+    const attrs = ELEMENT_TAGS[nodeName](el as HTMLElement);
     if (attrs) {
       return jsx("element", attrs, children);
     }
   }
 
   if (TEXT_TAGS[nodeName]) {
-    const attrs = TEXT_TAGS[nodeName](el);
+    const attrs = TEXT_TAGS[nodeName](el as HTMLElement);
     return (
       children
         // .filter((child) => Text.isText(child))

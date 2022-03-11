@@ -1,19 +1,21 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  TextField,
-} from "@mui/material";
+import PropTypes from "prop-types";
 import React from "react";
 import { Editor, Element, Transforms } from "slate";
-import PropTypes from "prop-types";
-import { removeImage } from "../Utils/EditorUtils";
 import { useSlateStatic } from "slate-react";
 
-export default function ImageEditor(props) {
+import {
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField
+} from "@mui/material";
+
+import { CustomElement } from "../hooks/useEditorConfig";
+import { removeImage } from "../utils/EditorUtils";
+
+interface Props {
+  open: boolean;
+  handleClose: () => void;
+}
+
+export default function ImageEditor(props: Props) {
   const { open, handleClose } = props;
   const editor = useSlateStatic();
 
@@ -22,12 +24,18 @@ export default function ImageEditor(props) {
       !Editor.isEditor(n) && Element.isElement(n) && n.type === "Image",
   });
 
-  const onImageInputChange = (key) => (event) =>
-    Transforms.setNodes(
-      editor,
-      { [key]: event.target.value },
-      { at: location[1] }
-    );
+  const onImageInputChange =
+    (
+      key: string
+    ):
+      | React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>
+      | undefined =>
+    (event) =>
+      Transforms.setNodes(
+        editor,
+        { [key]: event.target.value },
+        { at: location[1] }
+      );
 
   return (
     <Dialog
@@ -48,7 +56,7 @@ export default function ImageEditor(props) {
               label="URL"
               aria-label="url"
               variant="outlined"
-              value={location?.[0]?.url || ""}
+              value={(location?.[0] as CustomElement)?.url || ""}
               onChange={onImageInputChange("url")}
             />
           </Grid>
@@ -60,7 +68,7 @@ export default function ImageEditor(props) {
               label="Caption"
               aria-label="caption"
               variant="outlined"
-              value={location?.[0]?.caption || ""}
+              value={(location?.[0] as CustomElement)?.caption || ""}
               onChange={onImageInputChange("caption")}
             />
           </Grid>
@@ -72,11 +80,9 @@ export default function ImageEditor(props) {
               label="Width"
               aria-label="width"
               variant="outlined"
-              value={location?.[0]?.width || ""}
+              value={(location?.[0] as CustomElement)?.width || ""}
               onChange={onImageInputChange("width")}
-              props={{
-                type: "number",
-              }}
+              type="number"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -87,11 +93,9 @@ export default function ImageEditor(props) {
               label="Height"
               aria-label="height"
               variant="outlined"
-              value={location?.[0]?.height || ""}
+              value={(location?.[0] as CustomElement)?.height || ""}
               onChange={onImageInputChange("height")}
-              props={{
-                type: "number",
-              }}
+              type="number"
             />
           </Grid>
         </Grid>

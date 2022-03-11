@@ -1,35 +1,40 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material";
 import isUrl from "is-url";
+import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { Editor, Element } from "slate";
-import PropTypes from "prop-types";
-import { removeLink, setLink } from "../Utils/EditorUtils";
 import { useSlateStatic } from "slate-react";
 
-export default function LinkEditor(props) {
+import {
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField
+} from "@mui/material";
+
+import { CustomElement } from "../hooks/useEditorConfig";
+import { removeLink, setLink } from "../utils/EditorUtils";
+
+interface Props {
+  open: boolean;
+  handleClose: () => void;
+}
+
+export default function LinkEditor(props: Props) {
   const { open, handleClose } = props;
   const editor = useSlateStatic();
 
-  const [error, setError] = useState();
+  const [error, setError] = useState("");
 
   const [location] = Editor.nodes(editor, {
     match: (n) =>
       !Editor.isEditor(n) && Element.isElement(n) && n.type === "Link",
   });
 
-  const onLinkURLChange = (event) => {
+  const onLinkURLChange:
+    | React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>
+    | undefined = (event) => {
     const link = event.target.value;
     if (!isUrl(link)) {
       setError("Invalid link");
     } else {
-      setError();
+      setError("");
     }
     setLink(editor, link);
   };
@@ -50,7 +55,7 @@ export default function LinkEditor(props) {
           label="URL"
           aria-label="url"
           variant="outlined"
-          value={location?.[0]?.url || ""}
+          value={(location?.[0] as CustomElement)?.url || ""}
           onChange={onLinkURLChange}
           error={!!error}
           helperText={error}

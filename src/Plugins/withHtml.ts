@@ -1,7 +1,8 @@
-import { Transforms } from "slate";
-import { deserialize } from "../Utils/EditorUtils";
+import { Editor, Transforms } from "slate";
 
-export const withHtml = (editor) => {
+import { deserialize } from "../utils/EditorUtils";
+
+export const withHtml = (editor: Editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {

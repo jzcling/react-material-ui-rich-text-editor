@@ -1,57 +1,30 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Divider,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Popover,
-  TextField,
-  Tooltip,
-} from "@mui/material";
-import PropTypes from "prop-types";
-import {
-  toggleBlock,
-  toggleMark,
-  getActiveStyles,
-  getActiveBlock,
-  getActiveFontSize,
-  getActiveFontColor,
-  insertImage,
-  isBlockActive,
-} from "../Utils/EditorUtils";
-import { ReactEditor, useSlateStatic } from "slate-react";
-import { Editor, Transforms } from "slate";
 import isHotkey from "is-hotkey";
-import {
-  BorderColor,
-  Code,
-  FormatAlignCenter,
-  FormatAlignJustify,
-  FormatAlignLeft,
-  FormatAlignRight,
-  FormatBold,
-  FormatItalic,
-  FormatListBulleted,
-  FormatListNumbered,
-  FormatQuote,
-  FormatUnderlined,
-  Help,
-  Image,
-  Link,
-  StrikethroughS,
-} from "@mui/icons-material";
+import React, { useCallback, useEffect, useState } from "react";
 import { ColorPicker, ColorPickerVariant } from "react-mui-color";
+import { Editor, Selection, Transforms } from "slate";
+import { ReactEditor, useSlateStatic } from "slate-react";
+
+import {
+  BorderColor, Code, FormatAlignCenter, FormatAlignJustify, FormatAlignLeft, FormatAlignRight,
+  FormatBold, FormatItalic, FormatListBulleted, FormatListNumbered, FormatQuote, FormatUnderlined,
+  Help, Image, Link, StrikethroughS, SvgIconComponent
+} from "@mui/icons-material";
+import {
+  Box, Button, ButtonGroup, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem,
+  Popover, TextField, Theme, Tooltip
+} from "@mui/material";
+
+import { ElementType } from "../hooks/useEditorConfig";
+import {
+  getActiveBlock, getActiveFontColor, getActiveFontSize, getActiveStyles, insertImage,
+  isBlockActive, toggleBlock, toggleMark
+} from "../utils/EditorUtils";
 
 const activeStyle = {
-  backgroundColor: (theme) => theme.palette.primary.light,
+  backgroundColor: (theme: Theme) => theme.palette.primary.light,
   color: "white",
   "&:hover": {
-    backgroundColor: (theme) => theme.palette.primary.main,
+    backgroundColor: (theme: Theme) => theme.palette.primary.main,
   },
 };
 
@@ -64,7 +37,23 @@ const groupedButtonStyle = {
   borderRadius: "50%",
 };
 
-const TEXT_STYLE_TYPES = [
+export type TextStyleType = {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  highlight: boolean;
+  code: boolean;
+  quote: boolean;
+  fontSize: string | number;
+  color: string;
+};
+
+const TEXT_STYLE_TYPES: Array<{
+  style: keyof TextStyleType;
+  label: string;
+  icon: JSX.Element;
+}> = [
   {
     style: "bold",
     label: "Bold",
@@ -102,7 +91,11 @@ const TEXT_STYLE_TYPES = [
   },
 ];
 
-const GROUP_TYPES = [
+const GROUP_TYPES: Array<{
+  parent: ElementType;
+  child: ElementType | keyof TextStyleType;
+  icon: JSX.Element;
+}> = [
   {
     parent: "Ordered List",
     child: "List Item",
@@ -115,17 +108,17 @@ const GROUP_TYPES = [
   },
   {
     parent: "Quote Block",
-    child: "Quote",
+    child: "quote",
     icon: <FormatQuote />,
   },
   {
     parent: "Code Block",
-    child: "Code",
+    child: "code",
     icon: <Code />,
   },
 ];
 
-const ALIGNMENT_TYPES = [
+const ALIGNMENT_TYPES: Array<{ style: ElementType; icon: JSX.Element }> = [
   {
     style: "Align Left",
     icon: <FormatAlignLeft />,
@@ -148,12 +141,19 @@ const ALIGNMENT_TYPES = [
   },
 ];
 
-export default function Toolbar(props) {
+interface Props {
+  selection: Selection;
+  disabled: boolean;
+  setOpenLinkEditor: (b: boolean) => void;
+  setOpenImageEditor: (b: boolean) => void;
+}
+
+export default function Toolbar(props: Props) {
   const { selection, disabled, setOpenLinkEditor, setOpenImageEditor } = props;
   const editor = useSlateStatic();
-  var [fontSize, setFontSize] = useState();
-  var [fontColor, setFontColor] = useState();
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  var [fontSize, setFontSize] = useState<string | number>("");
+  var [fontColor, setFontColor] = useState("");
+  const [anchorEl, setAnchorEl] = React.useState<Element | null>(null);
 
   useEffect(() => {
     setFontSize(getActiveFontSize(editor));
@@ -163,7 +163,7 @@ export default function Toolbar(props) {
     setFontColor(getActiveFontColor(editor));
   }, [editor, selection]);
 
-  const [alignAnchorEl, setAlignAnchorEl] = useState();
+  const [alignAnchorEl, setAlignAnchorEl] = useState<HTMLElement>();
   const activeTextAlign =
     ALIGNMENT_TYPES.find(
       (t) =>
@@ -174,7 +174,11 @@ export default function Toolbar(props) {
         )
     ) || ALIGNMENT_TYPES[0];
 
-  const activeGroup =
+  const activeGroup: {
+    parent?: ElementType;
+    child?: ElementType | keyof TextStyleType;
+    icon?: JSX.Element;
+  } =
     GROUP_TYPES.find(
       (t) =>
         t.parent ===
@@ -185,57 +189,63 @@ export default function Toolbar(props) {
     ) || {};
 
   const handleTextStyleChange = useCallback(
-    (style) => (event) => {
-      event.preventDefault();
-      if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
-      }
-      toggleMark(editor, style);
-      // ReactEditor.focus(editor);
-    },
+    (style: keyof TextStyleType): React.MouseEventHandler<HTMLButtonElement> =>
+      (event) => {
+        event.preventDefault();
+        if (!editor.selection) {
+          Transforms.select(
+            editor,
+            selection || {
+              anchor: Editor.start(editor, []),
+              focus: Editor.end(editor, []),
+            }
+          );
+        }
+        toggleMark(editor, style);
+        // ReactEditor.focus(editor);
+      },
     [editor]
   );
 
   const handleTextAlignChange = useCallback(
-    (align) => (event) => {
-      event.preventDefault();
-      if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
-      }
-      setAlignAnchorEl(undefined);
-      toggleBlock(editor, align);
-      // ReactEditor.focus(editor);
-    },
+    (align: ElementType): React.MouseEventHandler<HTMLLIElement> =>
+      (event) => {
+        event.preventDefault();
+        if (!editor.selection) {
+          Transforms.select(
+            editor,
+            selection || {
+              anchor: Editor.start(editor, []),
+              focus: Editor.end(editor, []),
+            }
+          );
+        }
+        setAlignAnchorEl(undefined);
+        toggleBlock(editor, align);
+        // ReactEditor.focus(editor);
+      },
     [editor]
   );
 
   const handleGroupTypeChange = useCallback(
-    (style, type) => (event) => {
-      event.preventDefault();
-      if (!editor.selection) {
-        Transforms.select(
-          editor,
-          selection || {
-            anchor: Editor.start(editor, []),
-            focus: Editor.end(editor, []),
-          }
-        );
-      }
-      toggleBlock(editor, style, type);
-      // ReactEditor.focus(editor);
-    },
+    (
+        style: ElementType,
+        type: ElementType | keyof TextStyleType
+      ): React.MouseEventHandler<HTMLButtonElement> =>
+      (event) => {
+        event.preventDefault();
+        if (!editor.selection) {
+          Transforms.select(
+            editor,
+            selection || {
+              anchor: Editor.start(editor, []),
+              focus: Editor.end(editor, []),
+            }
+          );
+        }
+        toggleBlock(editor, style, type);
+        // ReactEditor.focus(editor);
+      },
     [editor]
   );
 
@@ -277,7 +287,9 @@ export default function Toolbar(props) {
     [editor]
   );
 
-  const openColorPicker = (event) => {
+  const openColorPicker: React.MouseEventHandler<HTMLButtonElement> = (
+    event
+  ) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -394,7 +406,6 @@ export default function Toolbar(props) {
         open={Boolean(alignAnchorEl)}
         onClose={() => setAlignAnchorEl(undefined)}
         anchorEl={alignAnchorEl}
-        getContentAnchorEl={null}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "left",
@@ -419,21 +430,22 @@ export default function Toolbar(props) {
       <ButtonGroup aria-label="group types" disabled={disabled}>
         {GROUP_TYPES.map((type) => (
           <Tooltip title={type.parent} key={type.parent}>
-            <Button
-              key={type.parent}
-              aria-label={type.parent}
-              sx={{
-                ...buttonMarginLeft,
-                ...groupedButtonStyle,
-                ...(activeGroup.style === type.parent ? activeStyle : {}),
-              }}
-              component={disabled ? "div" : undefined} // required to avoid error message about passing a disabled button to tooltip
-              // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
-              // onClick will cause users to lose focus on selection
-              onMouseDown={handleGroupTypeChange(type.parent, type.child)}
-            >
-              {type.icon}
-            </Button>
+            <span>
+              <Button
+                key={type.parent}
+                aria-label={type.parent}
+                sx={{
+                  ...buttonMarginLeft,
+                  ...groupedButtonStyle,
+                  ...(activeGroup.parent === type.parent ? activeStyle : {}),
+                }}
+                // Use onMouseDown instead of onClick due to https://github.com/ianstormtaylor/slate/issues/3412
+                // onClick will cause users to lose focus on selection
+                onMouseDown={handleGroupTypeChange(type.parent, type.child)}
+              >
+                {type.icon}
+              </Button>
+            </span>
           </Tooltip>
         ))}
       </ButtonGroup>
@@ -470,7 +482,7 @@ export default function Toolbar(props) {
               if (!isBlockActive(editor, "Image")) {
                 insertImage(editor, "https://via.placeholder.com/150");
               }
-              setOpenImageEditor(editor);
+              setOpenImageEditor(true);
             }}
             size="large"
           >
@@ -481,15 +493,3 @@ export default function Toolbar(props) {
     </Box>
   );
 }
-
-Toolbar.defaultProps = {
-  disabled: true,
-  setOpenLinkEditor: () => {},
-  setOpenImageEditor: () => {},
-};
-
-Toolbar.propTypes = {
-  disabled: PropTypes.bool,
-  setOpenLinkEditor: PropTypes.func,
-  setOpenImageEditor: PropTypes.func,
-};

@@ -1,21 +1,19 @@
-import { Editable, Slate, withReact } from "slate-react";
-import { createEditor } from "slate";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import PropTypes from "prop-types";
-import useEditorConfig from "../Hooks/useEditorConfig";
-import useSelection from "../Hooks/useSelection";
-import Toolbar from "./Toolbar";
-import {
-  deserialize,
-  identifyLinksInTextIfAny,
-  serialize,
-} from "../Utils/EditorUtils";
-import LinkEditor from "./LinkEditor";
-import { ClickAwayListener, debounce, Paper } from "@mui/material";
-import ImageEditor from "./ImageEditor";
+import { createEditor, Descendant, Editor as SlateEditor } from "slate";
 import { withHistory } from "slate-history";
-import { withHtml } from "../Plugins/withHtml";
-import { withShortcuts } from "../Plugins/withShortcuts";
+import { Editable, Slate, withReact } from "slate-react";
+import { EditableProps } from "slate-react/dist/components/editable";
+
+import { ClickAwayListener, debounce, Paper, PaperProps } from "@mui/material";
+
+import useEditorConfig from "../hooks/useEditorConfig";
+import useSelection from "../hooks/useSelection";
+import { withHtml } from "../plugins/withHtml";
+import { withShortcuts } from "../plugins/withShortcuts";
+import { deserialize, identifyLinksInTextIfAny, serialize } from "../utils/EditorUtils";
+import ImageEditor from "./ImageEditor";
+import LinkEditor from "./LinkEditor";
+import Toolbar from "./Toolbar";
 
 const initialValue = [
   {
@@ -24,20 +22,28 @@ const initialValue = [
   },
 ];
 
-function getValue(html) {
+function getValue(html: string) {
   if (!html) return initialValue;
   const parsed = new DOMParser().parseFromString(html, "text/html");
   return deserialize(parsed.body);
 }
 
-export default function Editor(props) {
+export interface EditorProps {
+  html: string;
+  updateHtml: (html: string) => void;
+  containerProps: PaperProps;
+  editableProps: EditableProps;
+}
+
+export default function Editor(props: EditorProps) {
   const { html, updateHtml, containerProps, editableProps } = props;
 
-  const editorRef = useRef();
-  if (!editorRef.current)
+  const editorRef = useRef<SlateEditor>();
+  if (!editorRef.current) {
     editorRef.current = withShortcuts(
       withHtml(withReact(withHistory(createEditor())))
     );
+  }
   const editor = editorRef.current;
 
   const { renderElement, renderLeaf, onKeyDown } = useEditorConfig(editor);
@@ -51,21 +57,27 @@ export default function Editor(props) {
   const [value, setValue] = useState(() => getValue(html));
 
   useEffect(() => {
-    const value = getValue(html);
-    editor.children = value;
-    setValue(value);
+    if (editor) {
+      const value = getValue(html);
+      editor.children = value;
+      setValue(value);
+    }
   }, [html]);
 
   const debouncedUpdateHtml = useMemo(
     () =>
-      debounce((editor) => {
+      debounce((editor: SlateEditor) => {
         const html = serialize(editor);
         updateHtml(html);
       }, 700),
     [updateHtml]
   );
 
-  const handleChange = (value) => {
+  if (!editor) {
+    return null;
+  }
+
+  const handleChange = (value: Descendant[]): void => {
     setValue(value);
     debouncedUpdateHtml(editor);
     setSelection(editor.selection);
@@ -120,14 +132,3 @@ export default function Editor(props) {
     </Slate>
   );
 }
-
-Editor.defaultProps = {
-  updateHtml: (html) => {},
-};
-
-Editor.propTypes = {
-  html: PropTypes.string,
-  updateHtml: PropTypes.func,
-  containerProps: PropTypes.object,
-  editableProps: PropTypes.object,
-};

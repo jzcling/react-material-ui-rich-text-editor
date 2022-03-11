@@ -1,7 +1,17 @@
 import React from "react";
-import PropTypes from "prop-types";
 
-export default function Image(props) {
+import { CustomElement } from "../hooks/useEditorConfig";
+
+interface Props {
+  element: CustomElement;
+  children: React.ReactNode;
+  attributes: React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLElement>,
+    HTMLElement
+  >;
+}
+
+export default function Image(props: Props) {
   const { element, children, attributes } = props;
   return (
     <figure
@@ -21,9 +31,3 @@ export default function Image(props) {
     </figure>
   );
 }
-
-Image.propTypes = {
-  element: PropTypes.object,
-  children: PropTypes.object,
-  attributes: PropTypes.object,
-};
